@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "搖搖樂｜六合彩搖珠預覽",
+  "name": "搖搖樂",
   "short_name": "搖搖樂",
-  "description": "用手機搖珠，逐注揭曉六合彩號碼。",
+  "description": "用手機搖珠，逐注揭曉號碼。",
   "lang": "zh-HK",
   "start_url": "./",
   "scope": "./",

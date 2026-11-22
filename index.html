@@ -9,22 +9,22 @@
   <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="https://cw91020251212.github.io/mark6-shake-preview/share-icon-512.png">
   <link rel="apple-touch-icon" href="https://cw91020251212.github.io/mark6-shake-preview/share-icon-512.png">
-  <title>搖搖樂｜六合彩搖珠預覽</title>
+  <title>搖搖樂</title>
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="搖搖樂">
-  <meta property="og:title" content="搖搖樂｜六合彩搖珠互動預覽">
-  <meta property="og:description" content="用手機搖珠，逐注揭曉六合彩號碼。">
+  <meta property="og:title" content="搖搖樂">
+  <meta property="og:description" content="用手機搖珠，逐注揭曉號碼。">
   <meta property="og:url" content="https://cw91020251212.github.io/mark6-shake-preview/">
   <meta property="og:image" content="https://cw91020251212.github.io/mark6-shake-preview/share-card.jpg">
   <meta property="og:image:secure_url" content="https://cw91020251212.github.io/mark6-shake-preview/share-card.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="675">
-  <meta property="og:image:alt" content="寶藍背景上的透明六合彩搖珠機及紅藍綠球珠">
+  <meta property="og:image:alt" content="寶藍背景上的透明搖珠機及紅藍綠球珠">
   <meta property="og:locale" content="zh_HK">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="搖搖樂">
-  <meta name="twitter:description" content="用手機搖珠，逐注揭曉六合彩號碼。">
+  <meta name="twitter:description" content="用手機搖珠，逐注揭曉號碼。">
   <meta name="twitter:image" content="https://cw91020251212.github.io/mark6-shake-preview/share-card.jpg">
   <style>
     :root {
@@ -52,25 +52,53 @@
     .topline { display:flex; align-items:center; justify-content:space-between; gap:12px; position:relative; min-height:42px; }
     .top-actions { display:flex; align-items:center; gap:7px; }
     .round-setting,.top-actions { position:relative; z-index:1; }
-    .brand-lockup {
-      position:absolute; z-index:0; left:50%; top:50%; transform:translate(-50%,-50%);
-      display:flex; align-items:center; gap:8px; min-height:40px; padding:4px 12px;
-      border:1px solid rgba(156,226,255,.52); border-radius:999px;
-      background:linear-gradient(135deg,rgba(53,91,193,.55),rgba(20,39,107,.6));
-      box-shadow:inset 0 1px 0 #ffffff2b,0 0 20px #8be7ee20,0 7px 18px #050a2445;
-      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; pointer-events:none;
+    .brand-stage {
+      display:grid; place-items:center; margin:8px 0 2px; min-height:52px;
+      pointer-events:none;
     }
+    .brand-lockup {
+      position:relative; display:inline-flex; align-items:center; gap:10px;
+      padding:8px 18px 9px; border:1px solid rgba(176,236,255,.58); border-radius:999px;
+      background:
+        radial-gradient(circle at 18% 0%,rgba(255,255,255,.22),transparent 42%),
+        linear-gradient(145deg,rgba(74,118,220,.62),rgba(18,36,104,.72) 58%,rgba(12,24,72,.78));
+      box-shadow:
+        inset 0 1px 0 #ffffff38,
+        0 0 0 1px #8be7ee14,
+        0 0 28px #7fe3ff2a,
+        0 10px 22px #04091f55;
+      backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+      white-space:nowrap;
+      animation:brand-float 2.8s ease-in-out infinite;
+    }
+    .brand-lockup::before,
+    .brand-lockup::after {
+      content:""; position:absolute; width:42%; height:1px; top:50%;
+      background:linear-gradient(90deg,transparent,#9defff88,transparent); opacity:.7;
+    }
+    .brand-lockup::before { right:calc(100% + 10px); }
+    .brand-lockup::after { left:calc(100% + 10px); }
     .brand-orb {
-      flex:none; width:13px; height:13px; border:1px solid #e8fdffcc; border-radius:50%;
+      flex:none; width:12px; height:12px; border:1px solid #e8fdffcc; border-radius:50%;
       background:radial-gradient(circle at 32% 25%,#fff 0 9%,#d8faff 15%,#7de2f4 49%,#437ad9 78%,#23419b 100%);
       box-shadow:0 0 10px #85e7ffbb,0 0 0 3px #8be7ee14;
+      animation:brand-orb-pulse 2.8s ease-in-out infinite;
     }
-    .brand-copy { display:grid; justify-items:center; gap:2px; }
+    .brand-orb:last-child { animation-delay:-1.4s; }
+    .brand-copy { display:grid; justify-items:center; }
     .brand-name {
-      margin:0; color:#f4fbff; font-size:clamp(18px,5.15vw,23px); font-weight:1000;
-      letter-spacing:.13em; line-height:1; text-shadow:0 1px 0 #ffffff55,0 0 13px #a5eaff91;
+      margin:0; color:#f7fcff; font-size:clamp(22px,6.2vw,28px); font-weight:1000;
+      letter-spacing:.22em; line-height:1; padding-left:.22em;
+      text-shadow:0 1px 0 #ffffff66,0 0 16px #a5eaffaa,0 8px 18px #06102f66;
     }
-    .brand-caption { color:#c4e8ff; font-size:8px; font-weight:800; letter-spacing:.2em; line-height:1; }
+    @keyframes brand-float {
+      0%,100% { transform:translateY(0); }
+      50% { transform:translateY(-7px); }
+    }
+    @keyframes brand-orb-pulse {
+      0%,100% { transform:scale(1); box-shadow:0 0 10px #85e7ffbb,0 0 0 3px #8be7ee14; }
+      50% { transform:scale(1.12); box-shadow:0 0 14px #85e7ffdd,0 0 0 4px #8be7ee22; }
+    }
     .round-setting { display:flex; align-items:center; gap:7px; color:#d9f2cf; font-size:11px; font-weight:800; }
     .round-setting select { min-height:38px; min-width:76px; padding:7px 10px; border:1px solid #c7f28b55; border-radius:999px; color:#e5f4d9; background:#ffffff0b; font:inherit; font-size:12px; font-weight:900; cursor:pointer; }
     .round-setting select option { color:#172832; background:#f5f5ef; }
@@ -90,8 +118,11 @@
       .round-setting label::after { content:"注數"; font-size:10px; }
       .round-setting select { min-width:68px; padding-inline:8px; }
       .top-actions { gap:5px; }
-      .brand-lockup { gap:5px; padding-inline:7px; }
-      .brand-name { font-size:17px; }
+      .brand-stage { margin-top:6px; min-height:48px; }
+      .brand-lockup { gap:8px; padding:7px 14px 8px; }
+      .brand-name { font-size:clamp(20px,5.8vw,24px); letter-spacing:.18em; padding-left:.18em; }
+      .brand-lockup::before,
+      .brand-lockup::after { width:28%; }
     }
     .completion-banner[hidden] { display:none!important; }
     .completion-banner {
@@ -209,15 +240,17 @@
     .saved-record-name { overflow-wrap:anywhere; }
     .saved-record-meta { padding:0 0 5px; color:#9fb2a6; font-size:10px; }
     .saved-entry-lines { display:grid; gap:4px; margin:0 0 8px; padding:0; list-style:none; color:#c5d4cc; font-size:10px; }
-    @media (max-height:760px) { .app { padding-top:max(8px,env(safe-area-inset-top)); } .hero { padding-top:1px; } h1 { font-size:clamp(23px,6vw,28px); } .machine-scene { height:min(92vw,360px); } .chamber { width:min(84vw,330px); height:min(84vw,330px); bottom:35px; } .status { min-height:30px; margin-top:1px; padding:5px 8px; font-size:12px; } .numbers { min-height:66px; margin:1px 0 3px; } .result-ball .result-number { font-size:clamp(18px,5.3vw,23px); } }
-    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; } }
+    @media (max-height:760px) { .app { padding-top:max(8px,env(safe-area-inset-top)); } .brand-stage { margin:4px 0 0; min-height:44px; } .brand-lockup { padding:6px 14px 7px; } .hero { padding-top:1px; } h1 { font-size:clamp(23px,6vw,28px); } .machine-scene { height:min(92vw,360px); } .chamber { width:min(84vw,330px); height:min(84vw,330px); bottom:35px; } .status { min-height:30px; margin-top:1px; padding:5px 8px; font-size:12px; } .numbers { min-height:66px; margin:1px 0 3px; } .result-ball .result-number { font-size:clamp(18px,5.3vw,23px); } }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+      .brand-lockup,.brand-orb { animation:none!important; transform:none!important; }
+    }
   </style>
 </head>
 <body>
   <main class="app">
     <header class="topline">
       <div class="round-setting"><label id="roundSettingLabel" for="roundSelect">每組注數</label><select id="roundSelect" aria-label="選擇每組注數"><option value="1">1 注</option><option value="2">2 注</option><option value="3">3 注</option><option value="4" selected>4 注</option><option value="5">5 注</option><option value="6">6 注</option><option value="7">7 注</option><option value="8">8 注</option><option value="9">9 注</option><option value="10">10 注</option><option value="11">11 注</option><option value="12">12 注</option><option value="13">13 注</option><option value="14">14 注</option><option value="15">15 注</option><option value="16">16 注</option><option value="17">17 注</option><option value="18">18 注</option><option value="19">19 注</option><option value="20">20 注</option></select></div>
-      <div class="brand-lockup" aria-label="搖搖樂，六合彩搖珠"><span class="brand-orb" aria-hidden="true"></span><div class="brand-copy"><h1 class="brand-name" id="title">搖搖樂</h1><span class="brand-caption">六合彩搖珠</span></div><span class="brand-orb" aria-hidden="true"></span></div>
       <div class="top-actions">
         <button class="share-button" id="shareButton" type="button" aria-label="分享到WhatsApp" title="分享到WhatsApp">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 15V3m0 0 4 4m-4-4L8 7"/><path d="M5 11v8h14v-8"/></svg>
@@ -225,6 +258,13 @@
         <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true" aria-label="關閉聲音">♫</button>
       </div>
     </header>
+    <div class="brand-stage">
+      <div class="brand-lockup" aria-label="搖搖樂">
+        <span class="brand-orb" aria-hidden="true"></span>
+        <div class="brand-copy"><h1 class="brand-name" id="title">搖搖樂</h1></div>
+        <span class="brand-orb" aria-hidden="true"></span>
+      </div>
+    </div>
 
     <section class="hero" aria-labelledby="title">
       <div class="machine-scene" id="machineScene" aria-label="透明抽獎球機，49顆號碼球：紅17、藍16、綠16">
@@ -256,7 +296,7 @@
         <button class="secondary" id="demoButton" type="button">按住示範</button>
         <div class="finish-hint" id="finishHint" hidden>四注已記錄；請按下方「再玩一次」開新一組。</div>
       </div>
-      <details class="history" id="history" aria-label="六合彩歷次抽號記錄">
+      <details class="history" id="history" aria-label="歷次抽號記錄">
         <summary><span id="historyTitle">歷次記錄</span><span id="historyCount">0 注</span></summary>
         <ol class="history-list" id="historyList"></ol>
       </details>
@@ -264,7 +304,7 @@
         <summary><span>本機暫存</span><span id="savedCount">0 份</span></summary>
         <div class="storage-content">
           <label for="savedName">暫存名稱（可留空；留空會用儲存當刻日期時間命名）</label>
-          <div class="storage-row"><input id="savedName" type="text" maxlength="60" placeholder="例如：今期六合彩"><button id="saveButton" type="button" disabled>暫存目前記錄</button></div>
+          <div class="storage-row"><input id="savedName" type="text" maxlength="60" placeholder="例如：今期搖搖樂"><button id="saveButton" type="button" disabled>暫存目前記錄</button></div>
           <p class="storage-note">只保存在此瀏覽器，可稍後打開查看，不會上傳。</p>
           <p class="save-status" id="saveStatus" role="status" aria-live="polite"></p>
           <ul class="saved-list" id="savedList"></ul>
@@ -637,7 +677,7 @@
         roundCounter.textContent = `第 ${groupNumber} 組・${roundCount} / ${groupRounds} 注`;
         historyCount.textContent = `${historyList.querySelectorAll('.history-entry').length} 注`;
         const chinese=chineseCount(groupRounds);
-        historyTitle.textContent='歷次記錄';history.setAttribute('aria-label','六合彩歷次抽號記錄');
+        historyTitle.textContent='歷次記錄';history.setAttribute('aria-label','歷次抽號記錄');
         completionText.textContent=`${chinese}注完成！恭喜`;completionCopy.textContent=`${chinese}注結果已記錄`;
         finishHint.textContent=`${chinese}注已記錄；請按下方「再玩一次」開新一組。`;
         roundSettingLabel.textContent=roundCount>0 && roundCount>=groupRounds?'下組注數':'每組注數';
@@ -665,7 +705,7 @@
       }
       function timestampFileName(date) {
         const pad=n=>String(n).padStart(2,'0');
-        return `六合彩暫存_${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`;
+        return `搖搖樂暫存_${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`;
       }
       function saveCurrentRecords() {
         const entries=[...historyList.querySelectorAll('.history-entry')].map(row=>({label:row.querySelector('.history-round')?.textContent||'',numbers:[...row.querySelectorAll('.history-result-ball .result-number')].map(number=>number.textContent)}));
@@ -833,7 +873,7 @@
       }
       shareButton.addEventListener('click', () => {
         const shareUrl=`${window.location.origin}${window.location.pathname}`;
-        const shareText=`試玩「搖搖樂」：用手機搖珠，逐注揭曉六合彩號碼。\n${shareUrl}`;
+        const shareText=`試玩「搖搖樂」：用手機搖珠，逐注揭曉號碼。\n${shareUrl}`;
         const whatsappUrl=`https://wa.me/?text=${encodeURIComponent(shareText)}`;
         window.open(whatsappUrl,'_blank','noopener,noreferrer');
       });
