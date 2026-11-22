@@ -91,6 +91,16 @@
       letter-spacing:.22em; line-height:1; padding-left:.22em;
       text-shadow:0 1px 0 #ffffff66,0 0 16px #a5eaffaa,0 8px 18px #06102f66;
     }
+    .reset-row {
+      display:flex; justify-content:center; margin:2px 0 4px; padding:0 48px;
+    }
+    .reset-button {
+      min-height:34px; padding:6px 16px; border:1px solid #e6ffff2e; border-radius:999px;
+      color:#d5e6dc; background:#ffffff0c; font:inherit; font-size:12px; font-weight:800;
+      letter-spacing:.06em; cursor:pointer;
+      box-shadow:inset 0 1px 0 #ffffff18;
+    }
+    .reset-button:active { transform:scale(.97); }
     @keyframes brand-float {
       0%,100% { transform:translateY(0); }
       50% { transform:translateY(-7px); }
@@ -123,6 +133,7 @@
       .brand-name { font-size:clamp(20px,5.8vw,24px); letter-spacing:.18em; padding-left:.18em; }
       .brand-lockup::before,
       .brand-lockup::after { width:28%; }
+      .reset-row { padding:0 36px; }
     }
     .completion-banner[hidden] { display:none!important; }
     .completion-banner {
@@ -287,6 +298,9 @@
         <span class="brand-orb" aria-hidden="true"></span>
       </div>
     </div>
+    <div class="reset-row">
+      <button class="reset-button" id="resetButton" type="button" aria-label="重置本局，清除已抽注數">重置</button>
+    </div>
 
     <section class="hero" aria-labelledby="title">
       <div class="machine-scene" id="machineScene" aria-label="透明抽獎球機，49顆號碼球：紅17、藍16、綠16">
@@ -339,7 +353,7 @@
   <script>
     (() => {
       const $ = (id) => document.getElementById(id);
-      const startButton = $('startButton'), demoButton = $('demoButton'), shareButton = $('shareButton');
+      const startButton = $('startButton'), demoButton = $('demoButton'), shareButton = $('shareButton'), resetButton = $('resetButton');
       const status = $('status'), meterFill = $('meterFill'), meterText = $('meterText'), settleProgress = $('settleProgress'), settleFill = $('settleFill');
       const chamber = $('chamber'), machineScene = $('machineScene'), ballBed = $('ballBed');
       const soundToggle = $('soundToggle'), completionBanner = $('completionBanner'), completionText = $('completionText'), completionCopy = $('completionCopy'), finishHint = $('finishHint'), hero = document.querySelector('.hero');
@@ -787,6 +801,29 @@
         demoButton.classList.remove('visible'); setStatus('按「開始」；球停穩後大力一戳','ready');
         meterFill.style.width = '3%'; meterText.textContent = '等待開始';
       }
+      function hardResetSession() {
+        clearTimeout(idleTimer); idleTimer=null;
+        clearSettlingProgress();
+        stopMock();
+        window.removeEventListener('devicemotion', handleMotion);
+        resetResultBalls();
+        historyList.replaceChildren();
+        history.open=false;
+        numbersCaption.hidden=true; numbersCaption.textContent='';
+        roundCount=0; groupNumber=1; groupRounds=selectedRounds;
+        revealed=false; active=false; permissionPending=false;
+        lastMotion=0; lastActivity=0; resultSequenceUntil=0; motionArmed=false; calmSampleCount=0; previousMotionVector=null; energy=0; smooth=0;
+        completionBanner.hidden=true; completionBanner.classList.remove('show'); finishHint.hidden=true; hero.classList.remove('is-complete');
+        chamber.classList.remove('is-mixing'); chamber.classList.add('is-idle'); machineScene.classList.remove('mixing');
+        startButton.hidden=false; startButton.disabled=false; startButton.textContent='開始';
+        demoButton.classList.remove('visible');
+        meterFill.style.width='3%'; meterText.textContent='等待開始';
+        setStatus('已重置；按「開始」重新搖珠','ready');
+        updateRoundCounter();
+        updateSaveAvailability();
+        scatterBalls();
+      }
+      resetButton.addEventListener('click', hardResetSession);
       function beginRound() {
         if (active) return;
         if (roundCount >= groupRounds) resetGame();
