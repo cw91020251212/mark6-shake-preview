@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1231">
+  <link rel="icon" type="image/png" sizes="512x512" href="https://cw91020251212.github.io/mark6-shake-preview/share-icon-512.png">
+  <link rel="apple-touch-icon" href="https://cw91020251212.github.io/mark6-shake-preview/share-icon-512.png">
+  <title>搖手機・抽六號｜六合彩搖珠預覽</title>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="搖手機・抽六號">
+  <meta property="og:title" content="搖手機・抽六號｜六合彩搖珠互動預覽">
+  <meta property="og:description" content="用手機搖珠，逐注揭曉六合彩號碼。">
+  <meta property="og:url" content="https://cw91020251212.github.io/mark6-shake-preview/">
+  <meta property="og:image" content="https://cw91020251212.github.io/mark6-shake-preview/share-card.jpg">
+  <meta property="og:image:secure_url" content="https://cw91020251212.github.io/mark6-shake-preview/share-card.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="675">
+  <meta property="og:image:alt" content="寶藍背景上的透明六合彩搖珠機及紅藍綠球珠">
+  <meta property="og:locale" content="zh_HK">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="搖手機・抽六號">
+  <meta name="twitter:description" content="用手機搖珠，逐注揭曉六合彩號碼。">
+  <meta name="twitter:image" content="https://cw91020251212.github.io/mark6-shake-preview/share-card.jpg">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080d20;
+      --panel: #15245f;
+      --mint: #c7f28b;
+      --gold: #ffd47a;
+      --text: #f5f5ef;
+      --muted: #b5c5c9;
+      --line: rgba(226, 245, 245, .16);
+      font-family: ui-rounded, "SF Pro Rounded", "Noto Sans TC", "PingFang HK", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100svh; overflow-x: hidden; color: var(--text);
+      background: radial-gradient(ellipse at 50% 9%, #2642b3 0, #172b72 36%, var(--bg) 78%);
+      display: flex; justify-content: center;
+    }
+    button { font: inherit; }
+    .app {
+      width: min(100%, 480px); min-height: 100svh; padding: max(10px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
+      display: flex; flex-direction: column; position: relative;
+    }
+    .topline { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .top-actions { display:flex; align-items:center; gap:7px; }
+    .round-setting { display:flex; align-items:center; gap:7px; color:#d9f2cf; font-size:11px; font-weight:800; }
+    .round-setting select { min-height:38px; min-width:76px; padding:7px 10px; border:1px solid #c7f28b55; border-radius:999px; color:#e5f4d9; background:#ffffff0b; font:inherit; font-size:12px; font-weight:900; cursor:pointer; }
+    .round-setting select option { color:#172832; background:#f5f5ef; }
+    .round-setting select:disabled { opacity:.58; cursor:default; }
+    .share-button { width:38px; height:38px; display:grid; place-items:center; padding:8px; border:1px solid #c7f28b48; border-radius:999px; background:#ffffff08; color:var(--mint); cursor:pointer; }
+    .share-button svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .share-button:active { transform:scale(.96); }
+    .sound-toggle { border:1px solid var(--line); border-radius:999px; background:#ffffff08; color:var(--muted); padding:8px 11px; min-height:38px; font-size:12px; cursor:pointer; }
+    .sound-toggle[aria-pressed="true"] { color:var(--mint); border-color:#c7f28b66; }
+    .hero { text-align:center; padding-top:4px; position:relative; }
+    .eyebrow { display:none; }
+    h1 { margin:2px 0; font-size:clamp(22px,6.2vw,29px); line-height:1.08; letter-spacing:-.045em; }
+    .completion-banner[hidden] { display:none!important; }
+    .completion-banner {
+      position:absolute; z-index:9; top:19%; left:50%; display:grid; justify-items:center; gap:3px;
+      width:min(68%,310px); min-height:58px; padding:7px 10px; overflow:visible;
+      transform:translateX(-50%) scale(.55); opacity:0; border:1px solid #fff0ad; border-radius:17px;
+      background:linear-gradient(135deg,#fff1b7,#ffd16d 52%,#f4a34b); color:#17251d;
+      font-size:clamp(20px,6.2vw,27px); font-weight:1000; letter-spacing:-.045em; line-height:1;
+      box-shadow:0 4px 22px #ffd46d8c,0 0 34px #ffb84255; pointer-events:none; text-align:center;
+    }
+    .completion-banner.show { animation:completion-pop .62s cubic-bezier(.17,1.45,.38,1) forwards; }
+    .completion-text { position:relative; z-index:2; }
+    .completion-hint { position:relative; z-index:2; color:#273321; font-size:10px; font-weight:800; letter-spacing:0; line-height:1.2; }
+    .completion-burst { position:absolute; z-index:1; top:50%; width:4px; height:4px; border-radius:50%; opacity:0; transform:scale(.12); }
+    .completion-burst.left { left:-7%; color:#ffe37b; background:#fff6c5; box-shadow:0 -19px 0 0 currentColor,13px -13px 0 0 currentColor,19px 0 0 0 currentColor,13px 13px 0 0 currentColor,0 19px 0 0 currentColor,-13px 13px 0 0 currentColor,-19px 0 0 0 currentColor,-13px -13px 0 0 currentColor; }
+    .completion-burst.right { right:-7%; color:#89e9df; background:#eaffc4; box-shadow:0 -17px 0 0 currentColor,12px -12px 0 0 currentColor,17px 0 0 0 currentColor,12px 12px 0 0 currentColor,0 17px 0 0 currentColor,-12px 12px 0 0 currentColor,-17px 0 0 0 currentColor,-12px -12px 0 0 currentColor; }
+    .completion-banner.show .completion-burst.left { animation:firework-burst .92s ease-out .05s 3; }
+    .completion-banner.show .completion-burst.right { animation:firework-burst .92s ease-out .32s 3; }
+    @keyframes completion-pop { 0% { opacity:0; transform:translateX(-50%) translateY(8px) scale(.5); } 70% { opacity:1; transform:translateX(-50%) translateY(-2px) scale(1.09); } 100% { opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }
+    @keyframes firework-burst { 0% { opacity:0; transform:scale(.12); } 18% { opacity:1; } 100% { opacity:0; transform:scale(1.25); } }
+
+    /* Original CSS-drawn acrylic air-mix chamber; each numbered ball remains a real DOM element. */
+    .machine-scene { width:min(100%,410px); height:min(104vw,420px); position:relative; margin:0 auto; isolation:isolate; }
+    .machine-glow { position:absolute; width:76%; height:45%; left:12%; bottom:4%; border-radius:50%; background:#78dbeb20; filter:blur(28px); transition:opacity .3s, transform .3s; opacity:.55; }
+    .machine-scene.mixing .machine-glow { opacity:1; transform:scale(1.12); }
+    .chamber {
+      position:absolute; z-index:2; width:min(92vw,400px); height:min(92vw,400px); left:50%; bottom:22px; transform:translateX(-50%);
+      overflow:hidden; border:2px solid rgba(218,248,249,.58); border-radius:50%;
+      background:radial-gradient(circle at 35% 25%,rgba(235,255,255,.18),transparent 15%),linear-gradient(105deg,rgba(176,238,244,.13),rgba(211,251,251,.035) 16%,rgba(255,255,255,.10) 49%,rgba(131,224,235,.04) 71%,rgba(208,246,248,.15)), radial-gradient(circle at 50% 82%,rgba(107,204,230,.21),transparent 63%);
+      box-shadow:0 9px 34px #0005, inset 0 0 28px #c4f9ff16, 0 0 22px #91e2f319;
+      transition:box-shadow .2s;
+    }
+    .chamber::before { content:""; position:absolute; z-index:5; top:5%; left:38%; width:24%; height:13px; border:1px solid #e5ffff70; border-radius:50%; background:linear-gradient(#d5ffff31,#e6ffff06); }
+    .chamber::after { content:""; position:absolute; z-index:5; inset:8px; border:1px solid #efffff20; border-radius:50%; pointer-events:none; }
+    .chamber.is-mixing { box-shadow:0 9px 34px #0005, inset 0 0 34px #bafcff2d, 0 0 32px #91e2f341; }
+    .ball-bed { position:absolute; z-index:3; inset:10px; overflow:visible; border-radius:50%; perspective:760px; perspective-origin:50% 50%; transform-style:preserve-3d; }
+    .air-column { position:absolute; z-index:1; bottom:6px; width:24px; height:65%; opacity:.13; border-radius:50%; background:linear-gradient(0deg,#b9fbff,transparent); filter:blur(7px); transform:translateX(-50%); }
+    .air-column.one { left:27%; } .air-column.two { left:51%; height:78%; } .air-column.three { left:74%; height:58%; }
+    .chamber.is-mixing .air-column { animation:air-rise .42s ease-in-out infinite alternate; opacity:.48; }
+    .chamber.is-mixing .air-column.two { animation-delay:-.21s; }
+    .chamber.is-mixing .air-column.three { animation-delay:-.34s; }
+    @keyframes air-rise { from { transform:translate(-50%,9px) scaleX(.7); opacity:.25; } to { transform:translate(-50%,-8px) scaleX(1.35); opacity:.65; } }
+    .glass-ribs { position:absolute; z-index:6; inset:8px 4px 9px; pointer-events:none; opacity:.57; background:repeating-linear-gradient(90deg,transparent 0 48px,rgba(231,255,255,.17) 49px,rgba(255,255,255,.04) 51px,transparent 54px); }
+    .glass-sheen { position:absolute; z-index:6; inset:0; pointer-events:none; background:linear-gradient(114deg,transparent 0 11%,#ecffff22 12%,transparent 17% 65%,#d9ffff17 66%,transparent 73%),radial-gradient(ellipse 86% 86% at 50% 48%,transparent 64%,rgba(218,255,255,.08) 83%,rgba(5,20,26,.22) 100%); }
+    .lotto-ball {
+      --ball-color:#ef4a43; --ball-light:#ff9183; --ball-dark:#962820;
+      --ball-size:30px;
+      position:absolute; left:50%; top:50%; width:var(--ball-size); aspect-ratio:1; display:grid; place-items:center; border-radius:50%; transform-style:preserve-3d;
+      color:#11181d; border:1px solid rgba(255,255,255,.36);
+      background:radial-gradient(ellipse 34% 19% at 27% 14%,#ffffffed 0 10%,#ffffff82 28%,#ffffff16 62%,transparent 100%),radial-gradient(circle at 34% 28%,var(--ball-light) 0,var(--ball-color) 43%,var(--ball-dark) 86%,#101921 100%);
+      box-shadow:0 6px 9px #061014a8, inset -5px -7px 10px #07101578, inset 2px 2px 4px #ffffff70;
+      transform:translate3d(calc(-50% + var(--ball-x,0px)),calc(-50% + var(--ball-y,0px)),var(--ball-z,0px)) rotate(var(--ball-spin,0deg)); will-change:transform; user-select:none;
+    }
+    .lotto-ball.red { --ball-color:#f0443f; --ball-light:#ff9a8b; --ball-dark:#9e2526; }
+    .lotto-ball.green { --ball-color:#38b972; --ball-light:#9af0ad; --ball-dark:#167343; }
+    .lotto-ball.blue { --ball-color:#39a9e7; --ball-light:#a3e8ff; --ball-dark:#1d5d9e; }
+    .lotto-ball::before { content:""; position:absolute; z-index:1; top:8%; left:15%; width:33%; height:16%; border-radius:50%; background:linear-gradient(180deg,#ffffffed,#ffffff48); filter:blur(.45px); transform:rotate(-36deg); pointer-events:none; }
+    .lotto-ball::after { content:""; position:absolute; z-index:1; right:9%; bottom:11%; width:34%; height:18%; border-radius:50%; background:linear-gradient(180deg,#0000,#07101540); filter:blur(2px); pointer-events:none; }
+    .ball-patch { position:relative; z-index:2; display:grid; place-items:center; width:70%; aspect-ratio:1; border:1px solid #d3d5d0; border-radius:50%; color:#111820; background:radial-gradient(circle at 34% 25%,#fff 0,#fbfaf5 58%,#d9dcd7 100%); font-size:clamp(10px,3vw,12px); line-height:1; font-weight:950; letter-spacing:-.07em; box-shadow:0 2px 3px #10182075,inset 0 1px 1px #ffffff; transform:rotate(-3deg); }
+    .machine-neck { position:absolute; z-index:3; width:52px; height:24px; left:50%; top:1px; transform:translateX(-50%); border:2px solid #d6f7f866; border-radius:50%; background:linear-gradient(90deg,#e8ffff17,#c3f8ff05,#d8ffff22); }
+
+    .meter { width:min(100%,280px); margin:1px auto 0; }
+    .meter-label { display:flex; justify-content:space-between; margin-bottom:7px; color:var(--muted); font-size:10px; }
+    .meter-track { height:5px; border-radius:9px; overflow:hidden; background:#ffffff18; }
+    .meter-fill { width:3%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#8be7ee,#c7f28b,#ffd47a); box-shadow:0 0 12px #b9f8db80; transition:width .12s ease-out; }
+    .settle-progress { width:min(100%,280px); height:5px; margin:5px auto 0; overflow:hidden; border-radius:9px; background:#ffffff20; box-shadow:0 0 10px #ffd47a22; }
+    .settle-progress[hidden] { display:none!important; }
+    .settle-fill { width:100%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#ffd47a,#fff0a8); box-shadow:0 0 12px #ffd47a80; }
+    .status { width:min(100%,320px); min-height:34px; display:grid; place-items:center; margin:4px auto 2px; padding:7px 11px; border:1px solid #c7f28b52; border-radius:11px; color:#e0f6bb; background:#c7f28b0c; font-size:13px; font-weight:850; line-height:1.25; text-align:center; box-shadow:0 0 14px #c7f28b0d; transition:color .18s,border-color .18s,background .18s; }
+    .status[data-state="shaking"] { color:#c9f7f5; border-color:#8be7ee80; background:#8be7ee12; animation:status-pulse .7s ease-in-out infinite alternate; }
+    .status[data-state="settling"] { color:#ffe3a0; border-color:#ffd47a; background:#ffd47a18; box-shadow:0 0 18px #ffd47a22; }
+    .status[data-state="revealing"] { color:#c7f3f4; border-color:#8be7ee75; background:#8be7ee12; }
+    .status[data-state="done"] { color:#d6f4a5; border-color:#c7f28b80; background:#c7f28b18; }
+    @keyframes status-pulse { from { box-shadow:0 0 7px #8be7ee12; } to { box-shadow:0 0 18px #8be7ee3b; } }
+    .round-counter { display:inline-block; margin:0 auto 2px; padding:3px 9px; border:1px solid #c7f28b35; border-radius:999px; color:#d6e6cf; font-size:10px; }
+    .numbers-caption[hidden] { display:none!important; }
+    .numbers-caption { margin:2px auto 0; color:#c1d2cc; font-size:10px; font-weight:700; line-height:1.15; }
+    .numbers { min-height:66px; display:flex; align-items:center; justify-content:center; gap:clamp(1px,.8vw,3px); margin:1px 0 3px; }
+    .result-ball { --result:#db6055; width:clamp(44px,14.5vw,58px); min-width:0; flex:0 1 clamp(44px,14.5vw,58px); aspect-ratio:1; display:grid; place-items:center; border-radius:50%; border:1px solid #ffffff70; background:radial-gradient(ellipse 38% 20% at 27% 14%,#fffffffa 0 8%,#ffffff80 30%,#ffffff14 66%,transparent 100%),radial-gradient(circle at 35% 28%,color-mix(in srgb,var(--result) 58%,white),var(--result) 49%,color-mix(in srgb,var(--result) 65%,black) 86%,#101820); box-shadow:0 7px 10px #0009,inset -6px -8px 10px #06101978,inset 2px 2px 3px #ffffff9c; color:#13191e; opacity:1; transform:scale(1); }
+    .result-ball .result-number { display:grid; place-items:center; width:72%; aspect-ratio:1; border:1px solid #d2d4ce; border-radius:50%; background:radial-gradient(circle at 35% 25%,#fff 0,#faf9f4 60%,#d7dad5 100%); box-shadow:0 2px 4px #10182080,inset 0 1px 1px #ffffff; font-size:clamp(21px,6vw,29px); line-height:1; font-weight:950; letter-spacing:-.06em; }
+    .result-ball.red { --result:#ed4942; } .result-ball.green { --result:#39b872; } .result-ball.blue { --result:#37a5e3; }
+    .result-ball.revealed { animation:result-pop .42s cubic-bezier(.16,1.35,.4,1) both; }
+    @keyframes result-pop { from { transform:translateY(12px) scale(.55) rotate(-20deg); opacity:.15; } to { transform:translateY(0) scale(1) rotate(0); opacity:1; } }
+    .actions { position:static; width:min(100%,360px); display:flex; flex-direction:column; align-items:center; gap:6px; margin:3px auto 0; padding:0; }
+    .primary { width:100%; max-width:none; min-height:50px; border:0; border-radius:15px; background:linear-gradient(135deg,#e0f5a6,#a8e65c); color:#1a2918; font-size:16px; font-weight:900; letter-spacing:.02em; box-shadow:0 7px 18px #a8e65c27; cursor:pointer; transition:transform .15s,filter .15s; }
+    .primary[hidden] { display:none!important; }
+    .primary:active,.secondary:active { transform:scale(.98); }
+    .primary:disabled { opacity:.6; cursor:wait; }
+    .secondary { display:none; width:100%; min-height:42px; padding:8px 16px; border:1px solid #c7f28b55; border-radius:13px; color:var(--mint); background:#c7f28b0c; cursor:pointer; touch-action:none; user-select:none; font-size:12px; }
+    .secondary.visible { display:inline-flex; justify-content:center; align-items:center; }
+    .finish-hint[hidden] { display:none!important; }
+    .finish-hint { width:100%; max-width:360px; padding:5px 10px; border:1px solid #c7f28b36; border-radius:10px; color:#d9edc5; background:#c7f28b0b; font-size:11px; line-height:1.35; text-align:center; }
+    .history { margin:9px auto 0; width:min(100%,390px); text-align:left; }
+    .history summary { display:flex; justify-content:space-between; align-items:center; padding:5px 2px; color:#b7c8c2; font-size:11px; cursor:pointer; list-style:none; }
+    .history summary::-webkit-details-marker { display:none; }
+    .history summary::after { content:"＋"; color:#9fb2a6; }
+    .history[open] summary::after { content:"−"; }
+    .history-list { display:grid; gap:7px; margin:0; padding:0; list-style:none; }
+    .history-entry { display:grid; grid-template-columns:1fr; gap:5px; padding:8px 0; border:1px solid #e6ffff14; border-radius:12px; background:#ffffff08; }
+    .history-round { padding-left:8px; color:#bccdc4; font-size:10px; }
+    .history-numbers { display:flex; width:100%; align-items:center; justify-content:center; gap:clamp(1px,.8vw,3px); }
+    .history-result-ball { flex:0 1 clamp(44px,14.5vw,58px); }
+    .storage-content { display:grid; gap:8px; padding:6px 0 9px; }
+    .storage-content label,.storage-note { color:#b7c8c2; font-size:10px; line-height:1.35; }
+    .storage-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:7px; }
+    .storage-row input { width:100%; min-width:0; min-height:38px; padding:7px 10px; border:1px solid #e6ffff25; border-radius:10px; color:var(--text); background:#ffffff0b; font:inherit; font-size:12px; }
+    .storage-row button { min-height:38px; padding:7px 11px; border:1px solid #c7f28b55; border-radius:10px; color:#d9edc5; background:#c7f28b12; font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
+    .storage-row button:disabled { opacity:.45; cursor:default; }
+    .save-status { min-height:14px; margin:0; color:var(--mint); font-size:10px; line-height:1.35; }
+    .saved-list { display:grid; gap:6px; margin:0; padding:0; list-style:none; }
+    .saved-record { padding:0 8px; border:1px solid #e6ffff16; border-radius:10px; background:#ffffff07; }
+    .saved-record summary { display:flex; justify-content:space-between; gap:8px; padding:7px 0; color:#d8e8df; font-size:11px; cursor:pointer; list-style:none; }
+    .saved-record summary::-webkit-details-marker { display:none; }
+    .saved-record summary::after { display:none; }
+    .saved-record-name { overflow-wrap:anywhere; }
+    .saved-record-meta { padding:0 0 5px; color:#9fb2a6; font-size:10px; }
+    .saved-entry-lines { display:grid; gap:4px; margin:0 0 8px; padding:0; list-style:none; color:#c5d4cc; font-size:10px; }
+    @media (max-height:760px) { .app { padding-top:max(8px,env(safe-area-inset-top)); } .hero { padding-top:1px; } h1 { font-size:clamp(23px,6vw,28px); } .machine-scene { height:min(92vw,360px); } .chamber { width:min(84vw,330px); height:min(84vw,330px); bottom:35px; } .status { min-height:30px; margin-top:1px; padding:5px 8px; font-size:12px; } .numbers { min-height:66px; margin:1px 0 3px; } .result-ball .result-number { font-size:clamp(18px,5.3vw,23px); } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topline">
+      <div class="round-setting"><label id="roundSettingLabel" for="roundSelect">每組注數</label><select id="roundSelect" aria-label="選擇每組注數"><option value="1">1 注</option><option value="2">2 注</option><option value="3">3 注</option><option value="4" selected>4 注</option><option value="5">5 注</option><option value="6">6 注</option><option value="7">7 注</option><option value="8">8 注</option><option value="9">9 注</option><option value="10">10 注</option><option value="11">11 注</option><option value="12">12 注</option><option value="13">13 注</option><option value="14">14 注</option><option value="15">15 注</option><option value="16">16 注</option><option value="17">17 注</option><option value="18">18 注</option><option value="19">19 注</option><option value="20">20 注</option></select></div>
+      <div class="top-actions">
+        <button class="share-button" id="shareButton" type="button" aria-label="分享到WhatsApp" title="分享到WhatsApp">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 15V3m0 0 4 4m-4-4L8 7"/><path d="M5 11v8h14v-8"/></svg>
+        </button>
+        <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true" aria-label="關閉聲音">♫</button>
+      </div>
+    </header>
+
+    <section class="hero" aria-labelledby="title">
+      <h1 id="title">搖手機・抽六號</h1>
+      <div class="machine-scene" id="machineScene" aria-label="透明抽獎球機，49顆號碼球：紅17、藍16、綠16">
+        <div class="machine-glow"></div>
+        <div class="machine-neck"></div>
+        <div class="chamber is-idle" id="chamber">
+          <div class="air-column one"></div><div class="air-column two"></div><div class="air-column three"></div>
+          <div class="ball-bed" id="ballBed" aria-hidden="true"></div>
+          <div class="completion-banner" id="completionBanner" hidden role="status" aria-live="assertive">
+            <span class="completion-burst left" aria-hidden="true"></span><span class="completion-text" id="completionText">四注完成！恭喜</span><span class="completion-hint" id="completionCopy">四注結果已記錄</span><span class="completion-burst right" aria-hidden="true"></span>
+          </div>
+          <div class="glass-ribs"></div><div class="glass-sheen"></div>
+        </div>
+      </div>
+
+      <div class="meter" aria-label="搖動能量">
+        <div class="meter-label"><span>球機動能</span><span id="meterText">等待開始</span></div>
+        <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
+      </div>
+      <div class="settle-progress" id="settleProgress" hidden aria-hidden="true"><div class="settle-fill" id="settleFill"></div></div>
+      <div class="status" id="status" data-state="ready" role="status" aria-live="polite">按「開始」；球停穩後大力一戳</div>
+      <div class="round-counter" id="roundCounter">第 1 組・0 / 4 注</div>
+      <div class="numbers-caption" id="numbersCaption" hidden></div>
+      <div class="numbers" id="numbers" aria-label="最新一注號碼；新結果揭曉後更新">
+        <span class="result-ball"><span class="result-number">?</span></span><span class="result-ball"><span class="result-number">?</span></span><span class="result-ball"><span class="result-number">?</span></span><span class="result-ball"><span class="result-number">?</span></span><span class="result-ball"><span class="result-number">?</span></span><span class="result-ball"><span class="result-number">?</span></span>
+      </div>
+      <div class="actions">
+        <button class="primary" id="startButton" type="button">開始</button>
+        <button class="secondary" id="demoButton" type="button">按住示範</button>
+        <div class="finish-hint" id="finishHint" hidden>四注已記錄；請按下方「再玩一次」開新一組。</div>
+      </div>
+      <details class="history" id="history" aria-label="六合彩歷次抽號記錄">
+        <summary><span id="historyTitle">歷次記錄</span><span id="historyCount">0 注</span></summary>
+        <ol class="history-list" id="historyList"></ol>
+      </details>
+      <details class="history" id="storageDetails" aria-label="本機暫存記錄">
+        <summary><span>本機暫存</span><span id="savedCount">0 份</span></summary>
+        <div class="storage-content">
+          <label for="savedName">暫存名稱（可留空；留空會用儲存當刻日期時間命名）</label>
+          <div class="storage-row"><input id="savedName" type="text" maxlength="60" placeholder="例如：今期六合彩"><button id="saveButton" type="button" disabled>暫存目前記錄</button></div>
+          <p class="storage-note">只保存在此瀏覽器，可稍後打開查看，不會上傳。</p>
+          <p class="save-status" id="saveStatus" role="status" aria-live="polite"></p>
+          <ul class="saved-list" id="savedList"></ul>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const startButton = $('startButton'), demoButton = $('demoButton'), shareButton = $('shareButton');
+      const status = $('status'), meterFill = $('meterFill'), meterText = $('meterText'), settleProgress = $('settleProgress'), settleFill = $('settleFill');
+      const chamber = $('chamber'), machineScene = $('machineScene'), ballBed = $('ballBed');
+      const soundToggle = $('soundToggle'), completionBanner = $('completionBanner'), completionText = $('completionText'), completionCopy = $('completionCopy'), finishHint = $('finishHint'), hero = document.querySelector('.hero');
+      const resultBalls = [...document.querySelectorAll('.result-ball')];
+      const roundCounter = $('roundCounter'), numbersCaption = $('numbersCaption'), historyCount = $('historyCount'), historyTitle = $('historyTitle'), historyList = $('historyList'), history = $('history');
+      const roundSelect = $('roundSelect'), roundSettingLabel = $('roundSettingLabel');
+      const savedName = $('savedName'), saveButton = $('saveButton'), saveStatus = $('saveStatus'), savedCount = $('savedCount'), savedList = $('savedList');
+      const colors = ['red','blue','green'];
+      const SAVE_KEY='mark6_preview_saved_records_v1';
+      const PHYSICS = { pxPerMps2:190, restitution:.72, collisionRestitution:.78, maxSpeed:1600, gravityFilter:.12, turbulence:1420 };
+      const MIN_SHAKE_ACCEL=7.5, MIN_SHAKE_JERK=25, MOTION_ACTIVITY_ACCEL=1.5, ARM_CALM_ACCEL=1.8, ARM_CALM_SAMPLES=6, SHAKE_IDLE_MS=1500, SETTLE_NOTICE_MS=220, MAX_SELECTABLE_ROUNDS=20;
+      const world = { width:0, height:0, cx:0, cy:0, boundary:0, radius:15, perspective:760, initialized:false };
+      let particles = [], previousFrame = 0;
+      let filteredGravity = null, screenGravity = {x:0,y:0,z:0}, shakeAccel = {x:0,y:0,z:0,time:0};
+      let active = false, revealed = false, soundOn = true, lastMotion = 0, lastActivity = 0, energy = 0, lastClackAt = 0, smooth = 0;
+      let roundCount = 0, groupNumber = 1, selectedRounds = 4, groupRounds = 4, sensorReady = false, permissionResolved = false, permissionPending = false, revealTimers = [];
+      let audioCtx = null, rollSource = null, rollBuffer = null, rollFilter = null, rollGain = null, clickBuffer = null, masterComp = null;
+      let idleTimer = null, settleNoticeTimer = null, mockTimer = null;
+      let motionArmed=false, calmSampleCount=0, resultSequenceUntil=0;
+      let previousMotionVector=null;
+
+      function shuffle(values) {
+        for (let i = values.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [values[i], values[j]] = [values[j], values[i]]; }
+        return values;
+      }
+      function buildMachineBalls() {
+        const nums = shuffle(Array.from({length:49}, (_,i) => i + 1));
+        const ballColors = shuffle([...Array(17).fill('red'), ...Array(16).fill('blue'), ...Array(16).fill('green')]);
+        for (let i=0; i<49; i++) {
+          const node = document.createElement('div');
+          node.className = `lotto-ball ${ballColors[i]}`;
+          node.dataset.n = nums[i];
+          node.innerHTML = `<span class="ball-patch">${String(nums[i]).padStart(2,'0')}</span>`;
+          ballBed.appendChild(node);
+          particles.push({id:i,el:node,x:0,y:0,z:0,vx:0,vy:0,vz:0,r:15,spin:Math.random()*360,phase:Math.random()*Math.PI*2});
+        }
+        resizePhysicsWorld();
+        scatterBalls();
+      }
+      buildMachineBalls();
+
+      function resizePhysicsWorld() {
+        const rect = ballBed.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const old = {cx:world.cx,cy:world.cy,boundary:world.boundary};
+        world.width = rect.width; world.height = rect.height;
+        world.cx = rect.width/2; world.cy = rect.height/2;
+        world.boundary = Math.min(rect.width,rect.height)/2 - 10;
+        world.radius = Math.min(21,Math.max(15,world.boundary/8));
+        world.perspective = Math.max(720,world.boundary*7.5);
+        ballBed.style.perspective = `${world.perspective}px`;
+        if (!world.initialized) {
+          particles.forEach(p => { p.x=world.cx; p.y=world.cy; p.z=0; p.r=world.radius; });
+          world.initialized = true;
+        } else {
+          const ratio = old.boundary > 0 ? world.boundary/old.boundary : 1;
+          particles.forEach(p => {
+            p.x = world.cx + (p.x-old.cx)*ratio; p.y = world.cy + (p.y-old.cy)*ratio;
+            p.z *= ratio; p.vx *= ratio; p.vy *= ratio; p.vz *= ratio; p.r=world.radius;
+          });
+        }
+        particles.forEach(p => {
+          p.el.style.setProperty('--ball-size',`${p.r*2}px`);
+          clampToSphere(p);
+        });
+        renderBalls();
+      }
+      function scatterBalls() {
+        if (!world.initialized) return;
+        const maxCenter=world.boundary-world.radius-2, minDistance=world.radius*2.02;
+        const placed=[];
+        particles.forEach(p => {
+          let accepted=false;
+          for (let attempt=0; attempt<420 && !accepted; attempt++) {
+            const u=Math.random()*2-1, angle=Math.random()*Math.PI*2, distance=Math.cbrt(Math.random())*maxCenter;
+            const radial=Math.sqrt(1-u*u)*distance,x=world.cx+Math.cos(angle)*radial,y=world.cy+Math.sin(angle)*radial,z=u*distance;
+            if (placed.every(q => Math.hypot(q.x-x,q.y-y,q.z-z)>=minDistance)) {
+              p.x=x;p.y=y;p.z=z;p.vx=(Math.random()-.5)*12;p.vy=(Math.random()-.5)*12;p.vz=(Math.random()-.5)*12;placed.push(p);accepted=true;
+            }
+          }
+          if (!accepted) {
+            const u=Math.random()*2-1,angle=Math.random()*Math.PI*2,distance=Math.cbrt(Math.random())*maxCenter,radial=Math.sqrt(1-u*u)*distance;
+            p.x=world.cx+Math.cos(angle)*radial;p.y=world.cy+Math.sin(angle)*radial;p.z=u*distance;p.vx=0;p.vy=0;p.vz=0;placed.push(p);
+          }
+        });
+        renderBalls();
+      }
+      function screenAxes(x,y,angle) {
+        const radians=(angle||0)*Math.PI/180, c=Math.cos(radians), s=Math.sin(radians);
+        return {x:x*c+y*s,y:-x*s+y*c};
+      }
+      function screenAngle() {
+        const angle=window.screen && window.screen.orientation && window.screen.orientation.angle;
+        return Number.isFinite(angle) ? angle : (Number.isFinite(window.orientation) ? window.orientation : 0);
+      }
+      function readMotionVector(event) {
+        const g=event.accelerationIncludingGravity, a=event.acceleration;
+        const valid3=v => v && [v.x,v.y,v.z].every(Number.isFinite);
+        if (valid3(g)) {
+          if (!filteredGravity) filteredGravity={x:g.x,y:g.y,z:g.z};
+          else {
+            const f=PHYSICS.gravityFilter;
+            filteredGravity.x+=(g.x-filteredGravity.x)*f;
+            filteredGravity.y+=(g.y-filteredGravity.y)*f;
+            filteredGravity.z+=(g.z-filteredGravity.z)*f;
+          }
+          const plane=screenAxes(filteredGravity.x,filteredGravity.y,screenAngle());
+          screenGravity.x=-plane.x*PHYSICS.pxPerMps2;
+          screenGravity.y= plane.y*PHYSICS.pxPerMps2;
+          screenGravity.z=-filteredGravity.z*PHYSICS.pxPerMps2;
+        }
+        let lx,ly,lz;
+        if (valid3(a)) { lx=a.x;ly=a.y;lz=a.z; }
+        else if (valid3(g) && filteredGravity) {
+          lx=g.x-filteredGravity.x;ly=g.y-filteredGravity.y;lz=g.z-filteredGravity.z;
+        } else return null;
+        const projected=screenAxes(lx,ly,screenAngle()), magnitude=Math.hypot(lx,ly,lz);
+        shakeAccel.x=-projected.x; shakeAccel.y=projected.y; shakeAccel.z=-lz; shakeAccel.time=performance.now();
+        return magnitude;
+      }
+      function clampToSphere(p) {
+        const dx=p.x-world.cx,dy=p.y-world.cy,dz=p.z,distance=Math.hypot(dx,dy,dz),limit=world.boundary-p.r-2;
+        if (distance<=limit || distance<.001) return;
+        const nx=dx/distance,ny=dy/distance,nz=dz/distance;
+        p.x=world.cx+nx*limit;p.y=world.cy+ny*limit;p.z=nz*limit;
+        const outward=p.vx*nx+p.vy*ny+p.vz*nz;
+        if (outward>0) { p.vx-=(1+PHYSICS.restitution)*outward*nx;p.vy-=(1+PHYSICS.restitution)*outward*ny;p.vz-=(1+PHYSICS.restitution)*outward*nz; }
+      }
+      function clampSpeed(p) {
+        const speed=Math.hypot(p.vx,p.vy,p.vz);
+        if (speed>PHYSICS.maxSpeed) { const k=PHYSICS.maxSpeed/speed;p.vx*=k;p.vy*=k;p.vz*=k; }
+      }
+      function collideBalls(now) {
+        const diameter=world.radius*2;
+        for (let i=0;i<particles.length;i++) for (let j=i+1;j<particles.length;j++) {
+          const a=particles[i],b=particles[j],dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z;
+          let distance=Math.hypot(dx,dy,dz);
+          if (distance>=diameter) continue;
+          if (distance<.001) distance=.001;
+          const nx=dx/distance,ny=dy/distance,nz=dz/distance,overlap=diameter-distance;
+          a.x-=nx*overlap*.505;a.y-=ny*overlap*.505;a.z-=nz*overlap*.505;
+          b.x+=nx*overlap*.505;b.y+=ny*overlap*.505;b.z+=nz*overlap*.505;
+          const relative=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny+(b.vz-a.vz)*nz;
+          if (relative<0) {
+            const impulse=-(1+PHYSICS.collisionRestitution)*relative*.5;
+            a.vx-=impulse*nx;a.vy-=impulse*ny;a.vz-=impulse*nz;
+            b.vx+=impulse*nx;b.vy+=impulse*ny;b.vz+=impulse*nz;
+            const rvx=b.vx-a.vx,rvy=b.vy-a.vy,rvz=b.vz-a.vz;
+            const tx=rvx-relative*nx,ty=rvy-relative*ny,tz=rvz-relative*nz,tangent=Math.hypot(tx,ty,tz);
+            if (tangent>.001) {
+              const friction=Math.min(tangent*.045,Math.abs(impulse)*.22),fx=tx/tangent*friction,fy=ty/tangent*friction,fz=tz/tangent*friction;
+              a.vx+=fx;a.vy+=fy;a.vz+=fz;b.vx-=fx;b.vy-=fy;b.vz-=fz;
+            }
+            if (active && -relative>75 && now-lastClackAt>90) {
+              lastClackAt=now;playImpact(Math.min(1,(-relative-45)/430));
+            }
+          }
+        }
+      }
+      function collideWall(p) {
+        const dx=p.x-world.cx,dy=p.y-world.cy,dz=p.z,distance=Math.hypot(dx,dy,dz),limit=world.boundary-p.r-2;
+        if (distance<=limit || distance<.001) return;
+        const nx=dx/distance,ny=dy/distance,nz=dz/distance;
+        p.x=world.cx+nx*limit;p.y=world.cy+ny*limit;p.z=nz*limit;
+        const outward=p.vx*nx+p.vy*ny+p.vz*nz;
+        if (outward>0) {
+          p.vx-=(1+PHYSICS.restitution)*outward*nx;p.vy-=(1+PHYSICS.restitution)*outward*ny;p.vz-=(1+PHYSICS.restitution)*outward*nz;
+          const normal=p.vx*nx+p.vy*ny+p.vz*nz;
+          p.vx-=(p.vx-normal*nx)*.035;p.vy-=(p.vy-normal*ny)*.035;p.vz-=(p.vz-normal*nz)*.035;
+        }
+      }
+      function renderBalls() {
+        particles.forEach(p => {
+          p.el.style.setProperty('--ball-x',`${(p.x-world.cx).toFixed(2)}px`);
+          p.el.style.setProperty('--ball-y',`${(p.y-world.cy).toFixed(2)}px`);
+          p.el.style.setProperty('--ball-z',`${p.z.toFixed(2)}px`);
+          p.el.style.setProperty('--ball-spin',`${p.spin.toFixed(1)}deg`);
+          const depth=Math.max(0,Math.min(1,(p.z+world.boundary)/(2*world.boundary)));
+          p.el.style.opacity=(.90+depth*.10).toFixed(2);
+          p.el.style.zIndex=String(Math.round(p.z+world.boundary+100));
+        });
+      }
+      function physicsFrame(now) {
+        const dt=Math.min(.035,previousFrame ? (now-previousFrame)/1000 : 1/60);
+        previousFrame=now;
+        if (world.initialized && dt>0) {
+          const steps=Math.max(1,Math.ceil(dt/(1/90))),step=dt/steps;
+          for (let sub=0;sub<steps;sub++) {
+            const age=(now-shakeAccel.time)/1000,shakeFade=age>=0 && age<.24 ? Math.exp(-age*11) : 0;
+            const shakeX=shakeAccel.x*PHYSICS.pxPerMps2*shakeFade,shakeY=shakeAccel.y*PHYSICS.pxPerMps2*shakeFade,shakeZ=shakeAccel.z*PHYSICS.pxPerMps2*shakeFade;
+        const damping=Math.exp(-(active?.30:1.35)*step),agitation=active?energy*PHYSICS.turbulence:0;
+            particles.forEach(p => {
+              const px=p.x-world.cx,py=p.y-world.cy,phase=now*.0034+p.phase+py*.014,flow=agitation*.64;
+              const whirlX=Math.sin(phase+p.z*.012)*agitation*1.35-py/Math.max(world.boundary,1)*flow;
+              const whirlY=Math.cos(phase*1.17+px*.012)*agitation*1.35+px/Math.max(world.boundary,1)*flow;
+              const whirlZ=Math.sin(phase*.83+px*.017-py*.013)*agitation*1.5;
+              p.vx+=(screenGravity.x+shakeX+whirlX)*step;
+              p.vy+=(screenGravity.y+shakeY+whirlY)*step;
+              p.vz+=(screenGravity.z+shakeZ+whirlZ)*step;
+              p.vx*=damping;p.vy*=damping;p.vz*=damping;clampSpeed(p);
+              p.x+=p.vx*step;p.y+=p.vy*step;p.z+=p.vz*step;
+              p.spin+=(Math.hypot(p.vx,p.vy)/Math.max(p.r,1))*step*57.3;
+            });
+            for (let pass=0;pass<4;pass++) { collideBalls(now);particles.forEach(collideWall); }
+          }
+          renderBalls();
+        }
+        requestAnimationFrame(physicsFrame);
+      }
+      window.addEventListener('resize',resizePhysicsWorld,{passive:true});
+      window.addEventListener('orientationchange',resizePhysicsWorld,{passive:true});
+      requestAnimationFrame(physicsFrame);
+
+      function updateSoundUI() {
+        soundToggle.setAttribute('aria-pressed', String(soundOn));
+        soundToggle.setAttribute('aria-label', soundOn ? '關閉聲音' : '開啟聲音');
+        soundToggle.textContent = soundOn ? '♫' : '♪';
+        if (!soundOn && audioCtx && rollGain) rollGain.gain.setTargetAtTime(0, audioCtx.currentTime, .035);
+        else if (soundOn && active) setRollSound(energy);
+      }
+      soundToggle.addEventListener('click', () => { soundOn = !soundOn; updateSoundUI(); });
+
+      function initAudio() {
+        if (audioCtx) { if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {}); return; }
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        try {
+          audioCtx = new AudioContext();
+          masterComp = audioCtx.createDynamicsCompressor();
+          masterComp.threshold.value = -13; masterComp.knee.value = 18; masterComp.ratio.value = 4.5; masterComp.attack.value = .004; masterComp.release.value = .16;
+          masterComp.connect(audioCtx.destination);
+          const length = Math.floor(audioCtx.sampleRate * .35);
+          const buffer = audioCtx.createBuffer(1, length, audioCtx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < length; i++) data[i] = (Math.random()*2-1) * (1 - i/length*.45);
+          rollSource = audioCtx.createBufferSource(); rollSource.buffer = buffer; rollSource.loop = true;
+          rollFilter = audioCtx.createBiquadFilter(); rollFilter.type = 'lowpass'; rollFilter.frequency.value = 4800; rollFilter.Q.value = .35;
+          rollGain = audioCtx.createGain(); rollGain.gain.value = 0;
+          rollSource.connect(rollFilter); rollFilter.connect(rollGain); rollGain.connect(masterComp); rollSource.start();
+          const clickLength = Math.floor(audioCtx.sampleRate * .09);
+          clickBuffer = audioCtx.createBuffer(1, clickLength, audioCtx.sampleRate);
+          const clickData = clickBuffer.getChannelData(0);
+          for (let i = 0; i < clickLength; i++) clickData[i] = (Math.random()*2-1) * Math.pow(1-i/clickLength, 1.45);
+          fetch('assets/lottery-balls-dry-clatter.mp3').then(response => { if (!response.ok) throw new Error('sound asset unavailable'); return response.arrayBuffer(); })
+            .then(bytes => audioCtx.decodeAudioData(bytes))
+            .then(decoded => {
+              if (!audioCtx || !rollFilter || !rollGain) return;
+              rollBuffer = decoded; window.__mark6SoundLoaded = true;
+              const previous = rollSource, next = audioCtx.createBufferSource();
+              next.buffer = rollBuffer; next.loop = true; next.connect(rollFilter); next.start(); rollSource = next;
+              if (previous) { try { previous.stop(audioCtx.currentTime + .04); } catch (_) {} setTimeout(() => { try { previous.disconnect(); } catch (_) {} }, 120); }
+              if (active) setRollSound(energy);
+            }).catch(() => { window.__mark6SoundLoaded = false; });
+        } catch (_) { audioCtx = null; }
+      }
+      function setRollSound(level) {
+        if (!audioCtx || !rollGain || !rollFilter) return;
+        const now = audioCtx.currentTime;
+        rollFilter.frequency.setTargetAtTime(2200 + level * 3300, now, .08);
+        rollGain.gain.setTargetAtTime(soundOn ? (.035 + level * .26) : 0, now, .07);
+      }
+      function playImpact(level) {
+        if (!audioCtx || !clickBuffer || !soundOn) return;
+        const now = audioCtx.currentTime;
+        const hitCount = 2 + Math.round(level*2);
+        for (let i=0; i<hitCount; i++) {
+          const hitAt = now + Math.random()*.006 + i*.007;
+          const src = audioCtx.createBufferSource(); src.buffer = clickBuffer;
+          const filter = audioCtx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 1050 + Math.random()*1800; filter.Q.value = .65 + Math.random()*.55;
+          const pan = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+          const volume = audioCtx.createGain();
+          const peak = (.085 + level*.135) * (.75 + Math.random()*.45);
+          volume.gain.setValueAtTime(.0001, hitAt); volume.gain.exponentialRampToValueAtTime(peak, hitAt+.002); volume.gain.exponentialRampToValueAtTime(.0001, hitAt+.034+Math.random()*.018);
+          src.connect(filter);
+          if (pan) { pan.pan.setValueAtTime((Math.random()*2-1)*.58, hitAt); filter.connect(pan); pan.connect(volume); } else filter.connect(volume);
+          volume.connect(masterComp || audioCtx.destination); src.start(hitAt); src.stop(hitAt+.07);
+          if (i===0 && level>.25) {
+            const thud=audioCtx.createOscillator(), thudGain=audioCtx.createGain();
+            thud.type='sine'; thud.frequency.setValueAtTime(92+Math.random()*48,hitAt);
+            thudGain.gain.setValueAtTime(.0001,hitAt); thudGain.gain.exponentialRampToValueAtTime(.012+level*.025,hitAt+.003); thudGain.gain.exponentialRampToValueAtTime(.0001,hitAt+.045);
+            thud.connect(thudGain); thudGain.connect(masterComp || audioCtx.destination); thud.start(hitAt); thud.stop(hitAt+.055);
+          }
+        }
+      }
+      function setMachineMotion(level) {
+        const mixing = active && level > .045;
+        chamber.classList.toggle('is-mixing', mixing);
+        chamber.classList.toggle('is-idle', !mixing);
+        machineScene.classList.toggle('mixing', mixing);
+      }
+      function setStatus(text,state='ready') { status.textContent=text;status.dataset.state=state; }
+      function clearSettlingProgress() {
+        clearTimeout(settleNoticeTimer);settleNoticeTimer=null;settleProgress.hidden=true;
+        settleFill.style.transition='none';settleFill.style.width='100%';
+      }
+      function showSettlingProgress() {
+        if (!active || !lastMotion || !lastActivity || Date.now()-lastActivity<SETTLE_NOTICE_MS) return;
+        setStatus('已停手，球珠整理中…即將揭號','settling');meterText.textContent='停手確認中';settleProgress.hidden=false;
+        settleFill.style.transition='none';settleFill.style.width='100%';void settleFill.offsetWidth;
+        const remaining=Math.max(0,SHAKE_IDLE_MS+50-(Date.now()-lastActivity));
+        settleFill.style.transition=`width ${remaining}ms linear`;settleFill.style.width='0%';
+      }
+      function showEnergy(level) {
+        energy = Math.max(0, Math.min(1, level));
+        meterFill.style.width = `${Math.max(3, Math.round(energy*100))}%`;
+        meterText.textContent = status.dataset.state==='settling' ? '停手確認中' : energy > .68 ? '球球翻得好勁！' : energy > .18 ? '球球翻滾中…' : active ? '等待大力搖動' : '等待開始';
+        setMachineMotion(energy);
+        setRollSound(energy);
+      }
+      function safeVibrate(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (_) {} }
+      function registerShake(level) {
+        if (!active || revealed) return;
+        const now=Date.now();
+        clearSettlingProgress();
+        lastMotion=now;lastActivity=now;
+        setStatus('正在搖珠，繼續搖；停手後即揭曉','shaking');
+        const adjusted = Math.max(.13, Math.min(1, level));
+        showEnergy(Math.max(energy*.43, adjusted));
+        const interval = Math.max(90, 275 - adjusted*165);
+        if (now - lastClackAt > interval) {
+          lastClackAt = now; playImpact(adjusted);
+          if (adjusted > .48) safeVibrate(8);
+        }
+        startIdleTimer();
+      }
+      function startIdleTimer() {
+        clearTimeout(idleTimer);
+        clearTimeout(settleNoticeTimer);settleNoticeTimer=null;
+        if (active && lastMotion && lastActivity) settleNoticeTimer=setTimeout(showSettlingProgress,SETTLE_NOTICE_MS);
+        idleTimer = setTimeout(() => {
+          if (active && lastMotion && lastActivity && Date.now() - lastActivity >= SHAKE_IDLE_MS) {
+            revealNumbers();
+          } else if (active && !lastMotion) {
+            showEnergy(0);setStatus(motionArmed?'球已停穩，準備好！大力一戳開始':'球珠落定中，暫勿搖',motionArmed?'ready':'waiting');
+          } else if (active && lastMotion) {
+            startIdleTimer();
+          }
+        }, SHAKE_IDLE_MS+50);
+      }
+      function resetResultBalls() {
+        revealTimers.forEach(clearTimeout); revealTimers = [];
+        resultBalls.forEach(ball => { ball.className = 'result-ball'; ball.querySelector('.result-number').textContent = '?'; });
+      }
+      function chineseCount(number) {
+        const digits=['零','一','二','三','四','五','六','七','八','九'];
+        if(number<10)return digits[number];
+        if(number===10)return '十';
+        if(number<20)return `十${digits[number%10]}`;
+        if(number===20)return '二十';
+        return String(number);
+      }
+      function updateRoundCounter() {
+        roundCounter.textContent = `第 ${groupNumber} 組・${roundCount} / ${groupRounds} 注`;
+        historyCount.textContent = `${historyList.querySelectorAll('.history-entry').length} 注`;
+        const chinese=chineseCount(groupRounds);
+        historyTitle.textContent='歷次記錄';history.setAttribute('aria-label','六合彩歷次抽號記錄');
+        completionText.textContent=`${chinese}注完成！恭喜`;completionCopy.textContent=`${chinese}注結果已記錄`;
+        finishHint.textContent=`${chinese}注已記錄；請按下方「再玩一次」開新一組。`;
+        roundSettingLabel.textContent=roundCount>0 && roundCount>=groupRounds?'下組注數':'每組注數';
+        roundSelect.disabled=active || (roundCount>0 && roundCount<groupRounds);
+        updateSaveAvailability();
+      }
+      roundSelect.addEventListener('change',()=>{selectedRounds=Math.max(1,Math.min(MAX_SELECTABLE_ROUNDS,Number(roundSelect.value)||4));roundSelect.value=String(selectedRounds);if(!active && roundCount===0)groupRounds=selectedRounds;updateRoundCounter();});
+      function readSavedRecords() {
+        try { const records=JSON.parse(localStorage.getItem(SAVE_KEY)||'[]');return Array.isArray(records)?records:[]; } catch (_) { return []; }
+      }
+      function updateSaveAvailability() { saveButton.disabled=historyList.querySelectorAll('.history-entry').length===0; }
+      function renderSavedRecords() {
+        const records=readSavedRecords().sort((a,b)=>String(b.savedAt||'').localeCompare(String(a.savedAt||'')));
+        savedCount.textContent=`${records.length} 份`;savedList.replaceChildren();
+        records.forEach(record=>{
+          const item=document.createElement('li'),details=document.createElement('details');details.className='saved-record';
+          const summary=document.createElement('summary'),name=document.createElement('span'),count=document.createElement('span');
+          name.className='saved-record-name';name.textContent=record.name||'暫存記錄';count.textContent=`${(record.entries||[]).length} 注`;summary.append(name,count);details.appendChild(summary);
+          const meta=document.createElement('div');meta.className='saved-record-meta';
+          const date=new Date(record.savedAt);meta.textContent=Number.isNaN(date.getTime())?'儲存時間未記錄':date.toLocaleString('zh-HK',{dateStyle:'medium',timeStyle:'short'});details.appendChild(meta);
+          const lines=document.createElement('ul');lines.className='saved-entry-lines';
+          (record.entries||[]).forEach(entry=>{const line=document.createElement('li');line.textContent=`${entry.label||'注數'}：${(entry.numbers||[]).join('  ')}`;lines.appendChild(line);});
+          details.appendChild(lines);item.appendChild(details);savedList.appendChild(item);
+        });
+      }
+      function timestampFileName(date) {
+        const pad=n=>String(n).padStart(2,'0');
+        return `六合彩暫存_${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`;
+      }
+      function saveCurrentRecords() {
+        const entries=[...historyList.querySelectorAll('.history-entry')].map(row=>({label:row.querySelector('.history-round')?.textContent||'',numbers:[...row.querySelectorAll('.history-result-ball .result-number')].map(number=>number.textContent)}));
+        if(!entries.length){saveStatus.textContent='暫時沒有注數可保存，先抽出至少一注。';return;}
+        const now=new Date(),custom=savedName.value.trim().replace(/[\\/:*?"<>|]/g,'-'),name=custom||timestampFileName(now);
+        const record={id:`${now.getTime()}-${Math.random().toString(36).slice(2,8)}`,name,savedAt:now.toISOString(),entries};
+        try {
+          const records=readSavedRecords();records.unshift(record);localStorage.setItem(SAVE_KEY,JSON.stringify(records));
+          renderSavedRecords();savedName.value='';saveStatus.textContent=`已暫存「${name}」；${entries.length} 注記錄可稍後查看。`;
+        } catch (_) { saveStatus.textContent='未能暫存；此瀏覽器可能未允許本機儲存。'; }
+      }
+      saveButton.addEventListener('click',saveCurrentRecords);
+      function addHistory(setNumber, round, picks) {
+        const row = document.createElement('li'); row.className = 'history-entry';
+        const label = document.createElement('span'); label.className = 'history-round'; label.textContent = `第 ${setNumber} 組・第 ${round} 注`;
+        const group = document.createElement('span'); group.className = 'history-numbers';
+        picks.forEach((number, i) => {
+          const chip = document.createElement('span'); chip.className = `result-ball history-result-ball ${colors[(i+1)%colors.length]} revealed`;
+          const patch = document.createElement('span'); patch.className = 'result-number'; patch.textContent = String(number).padStart(2,'0');
+          chip.appendChild(patch); group.appendChild(chip);
+        });
+        row.append(label, group); historyList.appendChild(row); history.open = true;
+      }
+      function resetGame() {
+        const previousGroup=groupNumber,previousRound=roundCount;
+        if(roundCount>0 && roundCount>=groupRounds)groupNumber++;
+        roundCount = 0; groupRounds=selectedRounds; revealed = false; active = false; history.open = historyList.children.length>0; updateRoundCounter();
+        if(historyList.children.length){numbersCaption.hidden=false;numbersCaption.textContent=`上組記錄已保留：第 ${previousGroup} 組・第 ${previousRound} 注`;}
+        clearSettlingProgress();
+        lastMotion=0;lastActivity=0;resultSequenceUntil=0;motionArmed=false;calmSampleCount=0;previousMotionVector=null;
+        completionBanner.hidden=true;completionBanner.classList.remove('show');finishHint.hidden=true;hero.classList.remove('is-complete');
+        startButton.hidden = false; startButton.disabled = false; startButton.textContent = '開始';
+        demoButton.classList.remove('visible'); setStatus('按「開始」；球停穩後大力一戳','ready');
+        meterFill.style.width = '3%'; meterText.textContent = '等待開始';
+      }
+      function beginRound() {
+        if (active) return;
+        if (roundCount >= groupRounds) resetGame();
+        if (roundCount===0) groupRounds=selectedRounds;
+        resultSequenceUntil=0; active = true; revealed = false; lastMotion = 0; lastActivity = 0; motionArmed=!sensorReady; calmSampleCount=0; smooth = 0; lastClackAt = 0; energy = 0;
+        updateRoundCounter();
+        startButton.hidden = true;
+        demoButton.classList.toggle('visible', !sensorReady);
+        const openingStatus=groupNumber>1 && historyList.children.length?'新一組已開始・上組記錄保留；等球停穩':'球珠落定中，暫勿搖';
+        setStatus(sensorReady ? openingStatus : '按住「按住示範」體驗搖珠','waiting');
+        meterFill.style.width = '3%'; meterText.textContent = sensorReady ? '球珠落定中' : '按住示範';
+        initAudio(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        if (sensorReady) window.addEventListener('devicemotion', handleMotion, {passive:true});
+        startIdleTimer();
+      }
+      function handleMotion(event) {
+        const previous=previousMotionVector;
+        const magnitude=readMotionVector(event);
+        if (!Number.isFinite(magnitude)) return;
+        const sampledAt=performance.now(), current={x:shakeAccel.x,y:shakeAccel.y,z:shakeAccel.z,time:sampledAt};
+        let jerk=0;
+        if (previous) {
+          const dt=(sampledAt-previous.time)/1000;
+          if (dt>.002 && dt<.35) jerk=Math.hypot(current.x-previous.x,current.y-previous.y,current.z-previous.z)/dt;
+        }
+        previousMotionVector=current;
+        const motion=Math.max(0,magnitude-1.0);
+        const strongJab=motion>=MIN_SHAKE_ACCEL && jerk>=MIN_SHAKE_JERK;
+        smooth = smooth*.56 + motion*.44;
+        if (revealed) {
+          const now=Date.now();
+          if (roundCount >= groupRounds || now < resultSequenceUntil) return;
+          if (strongJab) {
+            beginRound(); motionArmed=true; calmSampleCount=ARM_CALM_SAMPLES;
+            registerShake(Math.max(.2,Math.min(1,motion/10)));
+          }
+          return;
+        }
+        if (!active) return;
+        if (!motionArmed) {
+          shakeAccel.x=0;shakeAccel.y=0;shakeAccel.z=0;shakeAccel.time=0;
+          calmSampleCount = motion <= ARM_CALM_ACCEL ? calmSampleCount+1 : 0;
+          if (calmSampleCount >= ARM_CALM_SAMPLES) {
+            motionArmed=true;calmSampleCount=0;lastMotion=0;
+            showEnergy(0);meterText.textContent='大力一戳開始';setStatus('球已停穩，準備好！大力一戳開始','ready');
+          }
+          return;
+        }
+        if (strongJab) registerShake(Math.max(.2,Math.min(1,motion/10)));
+        else {
+          if (lastMotion && motion >= MOTION_ACTIVITY_ACCEL) { clearSettlingProgress();lastActivity=Date.now();setStatus('動作偏輕，繼續搖珠；停手後揭號','shaking');startIdleTimer(); }
+          if (active && (!lastMotion || Date.now()-lastMotion > 450)) showEnergy(Math.max(0,energy*.76));
+        }
+      }
+      async function startSession() {
+        if (active || permissionPending) return;
+        if (permissionResolved) { beginRound(); return; }
+        permissionPending = true; startButton.disabled = true; startButton.textContent = '啟用動作感應…';
+        initAudio(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        let permission = 'unknown';
+        try {
+          if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') permission = await DeviceMotionEvent.requestPermission();
+          else if (typeof DeviceMotionEvent !== 'undefined') permission = 'granted';
+        } catch (_) { permission = 'denied'; }
+        permissionResolved = true; permissionPending = false; sensorReady = permission === 'granted'; startButton.disabled = false;
+        if (sensorReady) {
+          demoButton.classList.remove('visible');
+        } else {
+          demoButton.classList.add('visible');
+        }
+        beginRound();
+      }
+      function startMock() {
+        if (!active || revealed || mockTimer) return;
+        const pulse = () => {
+          const angle=Math.random()*Math.PI*2,strength=3+Math.random()*8;
+          shakeAccel.x=Math.cos(angle)*strength;shakeAccel.y=Math.sin(angle)*strength;shakeAccel.z=(Math.random()-.5)*strength*1.4;shakeAccel.time=performance.now();
+          registerShake(.54 + Math.random()*.4);
+        };
+        pulse(); mockTimer = setInterval(pulse, 125);
+      }
+      function stopMock() { if (mockTimer) { clearInterval(mockTimer); mockTimer = null; } }
+      demoButton.addEventListener('pointerdown', (event) => { event.preventDefault(); if (!active && revealed && roundCount < groupRounds) beginRound(); startMock(); });
+      window.addEventListener('pointerup', stopMock); window.addEventListener('pointercancel', stopMock);
+      demoButton.addEventListener('keydown', (event) => { if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); if (!active && revealed && roundCount < groupRounds) beginRound(); startMock(); } });
+      demoButton.addEventListener('keyup', (event) => { if (event.key === ' ' || event.key === 'Enter') stopMock(); });
+
+      function makeNumbers() {
+        return shuffle(Array.from({length:49}, (_,i) => i+1)).slice(0,6).sort((a,b) => a-b);
+      }
+      function showCompletionBanner() {
+        if (roundCount < groupRounds) return;
+        hero.classList.add('is-complete'); completionBanner.hidden=false;
+        finishHint.hidden=false;
+        completionBanner.classList.remove('show'); void completionBanner.offsetWidth; completionBanner.classList.add('show');
+        startButton.hidden=false;startButton.disabled=false;startButton.textContent='再玩一次';
+        setStatus(`${chineseCount(groupRounds)}注完成！結果已記錄`,'done');
+      }
+      function revealNumbers() {
+        if (!active || revealed) return;
+        revealed = true; active = false; clearTimeout(idleTimer); stopMock();
+        clearSettlingProgress();
+        lastMotion=0;lastActivity=0;
+        chamber.classList.remove('is-mixing'); chamber.classList.add('is-idle'); machineScene.classList.remove('mixing');
+        if (audioCtx && rollGain) rollGain.gain.setTargetAtTime(0, audioCtx.currentTime, .11);
+        energy = .04; smooth = 0; meterFill.style.width = '4%'; meterText.textContent = '球球停好啦';
+        roundCount++;
+        safeVibrate([22,45,30]);
+        const picks = makeNumbers();
+        addHistory(groupNumber,roundCount,picks); updateRoundCounter();
+        setStatus('停手確認完成，六個號碼正逐個揭曉…','revealing');
+        startButton.hidden = true; startButton.disabled = true; startButton.textContent = '揭曉中…';
+        demoButton.classList.toggle('visible', !sensorReady && roundCount < groupRounds);
+        if (roundCount >= groupRounds) window.removeEventListener('devicemotion', handleMotion);
+        resultSequenceUntil=Date.now()+120+(resultBalls.length-1)*240+80;
+        resultBalls.forEach((ball, i) => {
+          const timer = setTimeout(() => {
+            ball.className = `result-ball ${colors[(i+1)%colors.length]}`;
+            ball.querySelector('.result-number').textContent = String(picks[i]).padStart(2,'0');
+            void ball.offsetWidth;
+            ball.classList.add('revealed');
+            if (i === resultBalls.length-1) {
+              numbersCaption.hidden=false;numbersCaption.textContent=`第 ${groupNumber} 組・第 ${roundCount} 注結果`;
+              if (roundCount >= groupRounds) showCompletionBanner();
+              else setStatus(`第 ${roundCount} 注已記錄；再大力一戳開始下一注`,'ready');
+            }
+          }, 120 + i*240);
+          revealTimers.push(timer);
+        });
+      }
+      shareButton.addEventListener('click', () => {
+        const shareUrl=`${window.location.origin}${window.location.pathname}`;
+        const shareText=`試玩「搖手機・抽六號」：用手機搖珠，逐注揭曉六合彩號碼。\n${shareUrl}`;
+        const whatsappUrl=`https://wa.me/?text=${encodeURIComponent(shareText)}`;
+        window.open(whatsappUrl,'_blank','noopener,noreferrer');
+      });
+      startButton.addEventListener('click', () => {
+        if (active || permissionPending) return;
+        if (roundCount >= groupRounds) resetGame();
+        if (!permissionResolved) startSession(); else beginRound();
+      });
+      renderSavedRecords();updateRoundCounter();
+      document.addEventListener('visibilitychange', () => { if (document.hidden && audioCtx && rollGain) rollGain.gain.setTargetAtTime(0,audioCtx.currentTime,.04); });
+    })();
+  </script>
+</body>
+</html>
