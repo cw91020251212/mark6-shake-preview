@@ -250,6 +250,12 @@
     .saved-record-name { overflow-wrap:anywhere; }
     .saved-record-meta { padding:0 0 5px; color:#9fb2a6; font-size:10px; }
     .saved-entry-lines { display:grid; gap:4px; margin:0 0 8px; padding:0; list-style:none; color:#c5d4cc; font-size:10px; }
+    .creator-credit {
+      margin:14px auto 2px; width:min(100%,390px); padding:8px 2px 2px;
+      color:#8ea39a; font-size:11px; font-weight:700; letter-spacing:.04em;
+      text-align:center; border-top:1px solid #e6ffff14;
+    }
+    .creator-credit strong { color:#c5d8cf; font-weight:800; letter-spacing:.06em; }
     @media (max-height:760px) { .app { padding-top:max(8px,env(safe-area-inset-top)); } .brand-stage { margin:4px 0 0; min-height:44px; } .brand-lockup { padding:6px 14px 7px; } .hero { padding-top:1px; } h1 { font-size:clamp(23px,6vw,28px); } .machine-scene { height:min(92vw,360px); } .chamber { width:min(84vw,330px); height:min(84vw,330px); bottom:35px; } .status { min-height:30px; margin-top:1px; padding:5px 8px; font-size:12px; } .numbers { min-height:66px; margin:1px 0 3px; } .result-ball .result-number { font-size:clamp(18px,5.3vw,23px); } }
     @media (prefers-reduced-motion:reduce) {
       *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
@@ -320,6 +326,7 @@
           <ul class="saved-list" id="savedList"></ul>
         </div>
       </details>
+      <p class="creator-credit">Created by <strong>Wong wai</strong></p>
     </section>
   </main>
 
