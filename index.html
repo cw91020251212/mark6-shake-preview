@@ -250,6 +250,12 @@
     .saved-record-name { overflow-wrap:anywhere; }
     .saved-record-meta { padding:0 0 5px; color:#9fb2a6; font-size:10px; }
     .saved-entry-lines { display:grid; gap:4px; margin:0 0 8px; padding:0; list-style:none; color:#c5d4cc; font-size:10px; }
+    .saved-record-actions { display:flex; justify-content:flex-end; padding:0 0 8px; }
+    .saved-delete {
+      min-height:32px; padding:5px 10px; border:1px solid #ffb4b455; border-radius:9px;
+      color:#ffd0d0; background:#ff8a8a14; font:inherit; font-size:11px; font-weight:800; cursor:pointer;
+    }
+    .saved-delete:active { transform:scale(.98); }
     .creator-credit {
       margin:14px auto 2px; width:min(100%,390px); padding:8px 2px 2px;
       color:#8ea39a; font-size:11px; font-weight:700; letter-spacing:.04em;
@@ -705,6 +711,19 @@
       function readSavedRecords() {
         try { const records=JSON.parse(localStorage.getItem(SAVE_KEY)||'[]');return Array.isArray(records)?records:[]; } catch (_) { return []; }
       }
+      function writeSavedRecords(records) {
+        localStorage.setItem(SAVE_KEY,JSON.stringify(records));
+      }
+      function deleteSavedRecord(recordId) {
+        const records=readSavedRecords().filter(record=>record.id!==recordId);
+        try {
+          writeSavedRecords(records);
+          renderSavedRecords();
+          saveStatus.textContent='已刪除該暫存記錄。';
+        } catch (_) {
+          saveStatus.textContent='未能刪除；此瀏覽器可能未允許本機儲存。';
+        }
+      }
       function updateSaveAvailability() { saveButton.disabled=historyList.querySelectorAll('.history-entry').length===0; }
       function renderSavedRecords() {
         const records=readSavedRecords().sort((a,b)=>String(b.savedAt||'').localeCompare(String(a.savedAt||'')));
@@ -717,7 +736,17 @@
           const date=new Date(record.savedAt);meta.textContent=Number.isNaN(date.getTime())?'儲存時間未記錄':date.toLocaleString('zh-HK',{dateStyle:'medium',timeStyle:'short'});details.appendChild(meta);
           const lines=document.createElement('ul');lines.className='saved-entry-lines';
           (record.entries||[]).forEach(entry=>{const line=document.createElement('li');line.textContent=`${entry.label||'注數'}：${(entry.numbers||[]).join('  ')}`;lines.appendChild(line);});
-          details.appendChild(lines);item.appendChild(details);savedList.appendChild(item);
+          details.appendChild(lines);
+          const actions=document.createElement('div');actions.className='saved-record-actions';
+          const deleteButton=document.createElement('button');deleteButton.type='button';deleteButton.className='saved-delete';
+          deleteButton.textContent='刪除';deleteButton.setAttribute('aria-label',`刪除暫存「${record.name||'暫存記錄'}」`);
+          deleteButton.addEventListener('click',(event)=>{
+            event.preventDefault();
+            event.stopPropagation();
+            deleteSavedRecord(record.id);
+          });
+          actions.appendChild(deleteButton);details.appendChild(actions);
+          item.appendChild(details);savedList.appendChild(item);
         });
       }
       function timestampFileName(date) {
@@ -730,7 +759,7 @@
         const now=new Date(),custom=savedName.value.trim().replace(/[\\/:*?"<>|]/g,'-'),name=custom||timestampFileName(now);
         const record={id:`${now.getTime()}-${Math.random().toString(36).slice(2,8)}`,name,savedAt:now.toISOString(),entries};
         try {
-          const records=readSavedRecords();records.unshift(record);localStorage.setItem(SAVE_KEY,JSON.stringify(records));
+          const records=readSavedRecords();records.unshift(record);writeSavedRecords(records);
           renderSavedRecords();savedName.value='';saveStatus.textContent=`已暫存「${name}」；${entries.length} 注記錄可稍後查看。`;
         } catch (_) { saveStatus.textContent='未能暫存；此瀏覽器可能未允許本機儲存。'; }
       }
