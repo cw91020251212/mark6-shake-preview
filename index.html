@@ -87,9 +87,12 @@
     .brand-orb:last-child { animation-delay:-1.4s; }
     .brand-copy { display:grid; justify-items:center; }
     .brand-name {
-      margin:0; color:#f7fcff; font-size:clamp(22px,6.2vw,28px); font-weight:1000;
+      margin:0; font-size:clamp(22px,6.2vw,28px); font-weight:1000;
       letter-spacing:.22em; line-height:1; padding-left:.22em;
-      text-shadow:0 1px 0 #ffffff66,0 0 16px #a5eaffaa,0 8px 18px #06102f66;
+      background:linear-gradient(to top right,#0d2858 0%,#2f5fb8 38%,#9fd0ff 72%,#f7fcff 100%);
+      -webkit-background-clip:text; background-clip:text;
+      color:transparent; -webkit-text-fill-color:transparent;
+      filter:drop-shadow(0 1px 0 #ffffff55) drop-shadow(0 3px 0 #071433aa) drop-shadow(0 8px 14px #04091fcc);
     }
     @keyframes brand-float {
       0%,100% { transform:translateY(0); }
