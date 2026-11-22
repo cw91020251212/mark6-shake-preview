@@ -254,7 +254,13 @@
       const roundCounter = $('roundCounter'), numbersCaption = $('numbersCaption'), historyCount = $('historyCount'), historyTitle = $('historyTitle'), historyList = $('historyList'), history = $('history');
       const roundSelect = $('roundSelect'), roundSettingLabel = $('roundSettingLabel');
       const savedName = $('savedName'), saveButton = $('saveButton'), saveStatus = $('saveStatus'), savedCount = $('savedCount'), savedList = $('savedList');
-      const colors = ['red','blue','green'];
+      // Mark Six ball colours are fixed by number, not assigned by draw position.
+      const BALL_COLOR_BY_NUMBER = new Map([
+        ...[1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46].map(number => [number,'red']),
+        ...[3,4,9,10,14,15,20,25,26,31,36,37,41,42,47,48].map(number => [number,'blue']),
+        ...[5,6,11,16,17,21,22,27,28,32,33,38,39,43,44,49].map(number => [number,'green'])
+      ]);
+      const ballColorFor = number => BALL_COLOR_BY_NUMBER.get(number);
       const SAVE_KEY='mark6_preview_saved_records_v1';
       const PHYSICS = { pxPerMps2:190, restitution:.72, collisionRestitution:.78, maxSpeed:1600, gravityFilter:.12, turbulence:1420 };
       const MIN_SHAKE_ACCEL=7.5, MIN_SHAKE_JERK=25, MOTION_ACTIVITY_ACCEL=1.5, ARM_CALM_ACCEL=1.8, ARM_CALM_SAMPLES=6, SHAKE_IDLE_MS=1500, SETTLE_NOTICE_MS=220, MAX_SELECTABLE_ROUNDS=20;
@@ -274,10 +280,9 @@
       }
       function buildMachineBalls() {
         const nums = shuffle(Array.from({length:49}, (_,i) => i + 1));
-        const ballColors = shuffle([...Array(17).fill('red'), ...Array(16).fill('blue'), ...Array(16).fill('green')]);
         for (let i=0; i<49; i++) {
           const node = document.createElement('div');
-          node.className = `lotto-ball ${ballColors[i]}`;
+          node.className = `lotto-ball ${ballColorFor(nums[i])}`;
           node.dataset.n = nums[i];
           node.innerHTML = `<span class="ball-patch">${String(nums[i]).padStart(2,'0')}</span>`;
           ballBed.appendChild(node);
@@ -647,8 +652,8 @@
         const row = document.createElement('li'); row.className = 'history-entry';
         const label = document.createElement('span'); label.className = 'history-round'; label.textContent = `第 ${setNumber} 組・第 ${round} 注`;
         const group = document.createElement('span'); group.className = 'history-numbers';
-        picks.forEach((number, i) => {
-          const chip = document.createElement('span'); chip.className = `result-ball history-result-ball ${colors[(i+1)%colors.length]} revealed`;
+        picks.forEach(number => {
+          const chip = document.createElement('span'); chip.className = `result-ball history-result-ball ${ballColorFor(number)} revealed`;
           const patch = document.createElement('span'); patch.className = 'result-number'; patch.textContent = String(number).padStart(2,'0');
           chip.appendChild(patch); group.appendChild(chip);
         });
@@ -783,7 +788,7 @@
         resultSequenceUntil=Date.now()+120+(resultBalls.length-1)*240+80;
         resultBalls.forEach((ball, i) => {
           const timer = setTimeout(() => {
-            ball.className = `result-ball ${colors[(i+1)%colors.length]}`;
+            ball.className = `result-ball ${ballColorFor(picks[i])}`;
             ball.querySelector('.result-number').textContent = String(picks[i]).padStart(2,'0');
             void ball.offsetWidth;
             ball.classList.add('revealed');
