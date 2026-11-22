@@ -49,8 +49,28 @@
       width: min(100%, 480px); min-height: 100svh; padding: max(10px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
       display: flex; flex-direction: column; position: relative;
     }
-    .topline { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .topline { display:flex; align-items:center; justify-content:space-between; gap:12px; position:relative; min-height:42px; }
     .top-actions { display:flex; align-items:center; gap:7px; }
+    .round-setting,.top-actions { position:relative; z-index:1; }
+    .brand-lockup {
+      position:absolute; z-index:0; left:50%; top:50%; transform:translate(-50%,-50%);
+      display:flex; align-items:center; gap:8px; min-height:40px; padding:4px 12px;
+      border:1px solid rgba(156,226,255,.52); border-radius:999px;
+      background:linear-gradient(135deg,rgba(53,91,193,.55),rgba(20,39,107,.6));
+      box-shadow:inset 0 1px 0 #ffffff2b,0 0 20px #8be7ee20,0 7px 18px #050a2445;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; pointer-events:none;
+    }
+    .brand-orb {
+      flex:none; width:13px; height:13px; border:1px solid #e8fdffcc; border-radius:50%;
+      background:radial-gradient(circle at 32% 25%,#fff 0 9%,#d8faff 15%,#7de2f4 49%,#437ad9 78%,#23419b 100%);
+      box-shadow:0 0 10px #85e7ffbb,0 0 0 3px #8be7ee14;
+    }
+    .brand-copy { display:grid; justify-items:center; gap:2px; }
+    .brand-name {
+      margin:0; color:#f4fbff; font-size:clamp(18px,5.15vw,23px); font-weight:1000;
+      letter-spacing:.13em; line-height:1; text-shadow:0 1px 0 #ffffff55,0 0 13px #a5eaff91;
+    }
+    .brand-caption { color:#c4e8ff; font-size:8px; font-weight:800; letter-spacing:.2em; line-height:1; }
     .round-setting { display:flex; align-items:center; gap:7px; color:#d9f2cf; font-size:11px; font-weight:800; }
     .round-setting select { min-height:38px; min-width:76px; padding:7px 10px; border:1px solid #c7f28b55; border-radius:999px; color:#e5f4d9; background:#ffffff0b; font:inherit; font-size:12px; font-weight:900; cursor:pointer; }
     .round-setting select option { color:#172832; background:#f5f5ef; }
@@ -63,6 +83,16 @@
     .hero { text-align:center; padding-top:4px; position:relative; }
     .eyebrow { display:none; }
     h1 { margin:2px 0; font-size:clamp(22px,6.2vw,29px); line-height:1.08; letter-spacing:-.045em; }
+    @media (max-width:430px) {
+      .topline { gap:5px; }
+      .round-setting { gap:5px; }
+      .round-setting label { font-size:0; }
+      .round-setting label::after { content:"注數"; font-size:10px; }
+      .round-setting select { min-width:68px; padding-inline:8px; }
+      .top-actions { gap:5px; }
+      .brand-lockup { gap:5px; padding-inline:7px; }
+      .brand-name { font-size:17px; }
+    }
     .completion-banner[hidden] { display:none!important; }
     .completion-banner {
       position:absolute; z-index:9; top:19%; left:50%; display:grid; justify-items:center; gap:3px;
@@ -187,6 +217,7 @@
   <main class="app">
     <header class="topline">
       <div class="round-setting"><label id="roundSettingLabel" for="roundSelect">每組注數</label><select id="roundSelect" aria-label="選擇每組注數"><option value="1">1 注</option><option value="2">2 注</option><option value="3">3 注</option><option value="4" selected>4 注</option><option value="5">5 注</option><option value="6">6 注</option><option value="7">7 注</option><option value="8">8 注</option><option value="9">9 注</option><option value="10">10 注</option><option value="11">11 注</option><option value="12">12 注</option><option value="13">13 注</option><option value="14">14 注</option><option value="15">15 注</option><option value="16">16 注</option><option value="17">17 注</option><option value="18">18 注</option><option value="19">19 注</option><option value="20">20 注</option></select></div>
+      <div class="brand-lockup" aria-label="搖搖樂，六合彩搖珠"><span class="brand-orb" aria-hidden="true"></span><div class="brand-copy"><h1 class="brand-name" id="title">搖搖樂</h1><span class="brand-caption">六合彩搖珠</span></div><span class="brand-orb" aria-hidden="true"></span></div>
       <div class="top-actions">
         <button class="share-button" id="shareButton" type="button" aria-label="分享到WhatsApp" title="分享到WhatsApp">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 15V3m0 0 4 4m-4-4L8 7"/><path d="M5 11v8h14v-8"/></svg>
@@ -196,7 +227,6 @@
     </header>
 
     <section class="hero" aria-labelledby="title">
-      <h1 id="title">搖搖樂</h1>
       <div class="machine-scene" id="machineScene" aria-label="透明抽獎球機，49顆號碼球：紅17、藍16、綠16">
         <div class="machine-glow"></div>
         <div class="machine-neck"></div>
