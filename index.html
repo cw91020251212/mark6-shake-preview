@@ -91,16 +91,16 @@
       letter-spacing:.22em; line-height:1; padding-left:.22em;
       text-shadow:0 1px 0 #ffffff66,0 0 16px #a5eaffaa,0 8px 18px #06102f66;
     }
-    .reset-row {
-      display:flex; justify-content:center; margin:2px 0 4px; padding:0 48px;
+    .top-left {
+      display:flex; align-items:center; gap:8px; min-width:0;
     }
     .reset-button {
-      min-height:34px; padding:6px 16px; border:1px solid #e6ffff2e; border-radius:999px;
-      color:#d5e6dc; background:#ffffff0c; font:inherit; font-size:12px; font-weight:800;
-      letter-spacing:.06em; cursor:pointer;
-      box-shadow:inset 0 1px 0 #ffffff18;
+      flex:none; width:38px; height:38px; display:grid; place-items:center; padding:8px;
+      border:1px solid #e6ffff2e; border-radius:999px; background:#ffffff08; color:#d5e6dc;
+      cursor:pointer; box-shadow:inset 0 1px 0 #ffffff18;
     }
-    .reset-button:active { transform:scale(.97); }
+    .reset-button svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+    .reset-button:active { transform:scale(.96) rotate(-20deg); }
     @keyframes brand-float {
       0%,100% { transform:translateY(0); }
       50% { transform:translateY(-7px); }
@@ -133,7 +133,7 @@
       .brand-name { font-size:clamp(20px,5.8vw,24px); letter-spacing:.18em; padding-left:.18em; }
       .brand-lockup::before,
       .brand-lockup::after { width:28%; }
-      .reset-row { padding:0 36px; }
+      .top-left { gap:5px; }
     }
     .completion-banner[hidden] { display:none!important; }
     .completion-banner {
@@ -283,9 +283,19 @@
 <body>
   <main class="app">
     <header class="topline">
-      <div class="round-setting"><label id="roundSettingLabel" for="roundSelect">每組注數</label><select id="roundSelect" aria-label="選擇每組注數"><option value="1">1 注</option><option value="2">2 注</option><option value="3">3 注</option><option value="4" selected>4 注</option><option value="5">5 注</option><option value="6">6 注</option><option value="7">7 注</option><option value="8">8 注</option><option value="9">9 注</option><option value="10">10 注</option><option value="11">11 注</option><option value="12">12 注</option><option value="13">13 注</option><option value="14">14 注</option><option value="15">15 注</option><option value="16">16 注</option><option value="17">17 注</option><option value="18">18 注</option><option value="19">19 注</option><option value="20">20 注</option></select></div>
+      <div class="top-left">
+        <button class="reset-button" id="resetButton" type="button" aria-label="重置本局" title="重置">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.2 8.2A8.2 8.2 0 0 1 18.8 7"/>
+            <path d="M18.2 3.4v4.3h-4.3"/>
+            <path d="M19.8 15.8A8.2 8.2 0 0 1 5.2 17"/>
+            <path d="M5.8 20.6v-4.3h4.3"/>
+          </svg>
+        </button>
+        <div class="round-setting"><label id="roundSettingLabel" for="roundSelect">每組注數</label><select id="roundSelect" aria-label="選擇每組注數"><option value="1">1 注</option><option value="2">2 注</option><option value="3">3 注</option><option value="4" selected>4 注</option><option value="5">5 注</option><option value="6">6 注</option><option value="7">7 注</option><option value="8">8 注</option><option value="9">9 注</option><option value="10">10 注</option><option value="11">11 注</option><option value="12">12 注</option><option value="13">13 注</option><option value="14">14 注</option><option value="15">15 注</option><option value="16">16 注</option><option value="17">17 注</option><option value="18">18 注</option><option value="19">19 注</option><option value="20">20 注</option></select></div>
+      </div>
       <div class="top-actions">
-        <button class="share-button" id="shareButton" type="button" aria-label="分享到WhatsApp" title="分享到WhatsApp">
+        <button class="share-button" id="shareButton" type="button" aria-label="分享結果到WhatsApp" title="分享結果">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 15V3m0 0 4 4m-4-4L8 7"/><path d="M5 11v8h14v-8"/></svg>
         </button>
         <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true" aria-label="關閉聲音">♫</button>
@@ -297,9 +307,6 @@
         <div class="brand-copy"><h1 class="brand-name" id="title">搖搖樂</h1></div>
         <span class="brand-orb" aria-hidden="true"></span>
       </div>
-    </div>
-    <div class="reset-row">
-      <button class="reset-button" id="resetButton" type="button" aria-label="重置本局，清除已抽注數">重置</button>
     </div>
 
     <section class="hero" aria-labelledby="title">
@@ -954,9 +961,19 @@
           revealTimers.push(timer);
         });
       }
+      function collectResultShareLines() {
+        return [...historyList.querySelectorAll('.history-entry')].map(row=>{
+          const label=row.querySelector('.history-round')?.textContent||'結果';
+          const numbers=[...row.querySelectorAll('.history-result-ball .result-number')].map(number=>number.textContent).join(' ');
+          return `${label}：${numbers}`;
+        });
+      }
       shareButton.addEventListener('click', () => {
         const shareUrl=`${window.location.origin}${window.location.pathname}`;
-        const shareText=`試玩「搖搖樂」：用手機搖珠，逐注揭曉號碼。\n${shareUrl}`;
+        const lines=collectResultShareLines();
+        const shareText=lines.length
+          ? `「搖搖樂」結果\n${lines.join('\n')}\n${shareUrl}`
+          : `試玩「搖搖樂」：用手機搖珠，逐注揭曉號碼。\n${shareUrl}`;
         const whatsappUrl=`https://wa.me/?text=${encodeURIComponent(shareText)}`;
         window.open(whatsappUrl,'_blank','noopener,noreferrer');
       });
