@@ -638,6 +638,28 @@
         if (!audioCtx || !playbackGain) return;
         playbackGain.gain.setTargetAtTime(isPlaying && soundOn ? ACTIVE_OUTPUT_GAIN : 1, audioCtx.currentTime, .045);
       }
+      function playRevealDing(index) {
+        if (!soundOn || !audioCtx || !masterComp) return;
+        try {
+          const now = audioCtx.currentTime;
+          const revealNotes = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+          const frequency = revealNotes[index % revealNotes.length];
+          const envelope = audioCtx.createGain();
+          envelope.gain.setValueAtTime(.0001, now);
+          envelope.gain.exponentialRampToValueAtTime(.045, now + .008);
+          envelope.gain.exponentialRampToValueAtTime(.0001, now + .20);
+          envelope.connect(masterComp);
+          const fundamental = audioCtx.createOscillator();
+          fundamental.type = 'sine'; fundamental.frequency.setValueAtTime(frequency, now); fundamental.connect(envelope);
+          const harmonic = audioCtx.createOscillator(), harmonicGain = audioCtx.createGain();
+          harmonic.type = 'sine'; harmonic.frequency.setValueAtTime(frequency * 2, now);
+          harmonicGain.gain.setValueAtTime(.22, now); harmonic.connect(harmonicGain); harmonicGain.connect(envelope);
+          fundamental.onended = () => fundamental.disconnect();
+          harmonic.onended = () => { harmonic.disconnect(); harmonicGain.disconnect(); envelope.disconnect(); };
+          fundamental.start(now); harmonic.start(now);
+          fundamental.stop(now + .22); harmonic.stop(now + .22);
+        } catch (_) {}
+      }
       function stopClatterScheduler() {
         clatterTimers.forEach((timer,lane) => { if (timer !== null) { clearTimeout(timer); clatterTimers[lane] = null; } });
       }
@@ -1033,6 +1055,7 @@
             ball.querySelector('.result-number').textContent = String(picks[i]).padStart(2,'0');
             void ball.offsetWidth;
             ball.classList.add('revealed');
+            playRevealDing(i);
             if (i === resultBalls.length-1) {
               numbersCaption.hidden=history.open;numbersCaption.textContent=`第 ${groupNumber} 組・第 ${roundCount} 注結果`;
               if (roundCount >= groupRounds) showCompletionBanner();
