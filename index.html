@@ -654,10 +654,18 @@
           const harmonic = audioCtx.createOscillator(), harmonicGain = audioCtx.createGain();
           harmonic.type = 'sine'; harmonic.frequency.setValueAtTime(frequency * 2, now);
           harmonicGain.gain.setValueAtTime(.22, now); harmonic.connect(harmonicGain); harmonicGain.connect(envelope);
+          const malletEnvelope = audioCtx.createGain();
+          malletEnvelope.gain.setValueAtTime(.0001, now);
+          malletEnvelope.gain.exponentialRampToValueAtTime(.018, now + .004);
+          malletEnvelope.gain.exponentialRampToValueAtTime(.0001, now + .12);
+          malletEnvelope.connect(masterComp);
+          const mallet = audioCtx.createOscillator();
+          mallet.type = 'triangle'; mallet.frequency.setValueAtTime(frequency, now); mallet.connect(malletEnvelope);
           fundamental.onended = () => fundamental.disconnect();
           harmonic.onended = () => { harmonic.disconnect(); harmonicGain.disconnect(); envelope.disconnect(); };
-          fundamental.start(now); harmonic.start(now);
-          fundamental.stop(now + .22); harmonic.stop(now + .22);
+          mallet.onended = () => { mallet.disconnect(); malletEnvelope.disconnect(); };
+          fundamental.start(now); harmonic.start(now); mallet.start(now);
+          fundamental.stop(now + .22); harmonic.stop(now + .22); mallet.stop(now + .14);
         } catch (_) {}
       }
       function stopClatterScheduler() {
