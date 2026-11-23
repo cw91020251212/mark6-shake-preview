@@ -368,6 +368,7 @@
       const roundCounter = $('roundCounter'), numbersCaption = $('numbersCaption'), historyCount = $('historyCount'), historyTitle = $('historyTitle'), historyList = $('historyList'), history = $('history');
       const roundSelect = $('roundSelect'), roundSettingLabel = $('roundSettingLabel');
       const savedName = $('savedName'), saveButton = $('saveButton'), saveStatus = $('saveStatus'), savedCount = $('savedCount'), savedList = $('savedList');
+      history.addEventListener('toggle', () => { if (numbersCaption.textContent) numbersCaption.hidden = history.open; });
       // Mark Six ball colours are fixed by number, not assigned by draw position.
       const BALL_COLOR_BY_NUMBER = new Map([
         ...[1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46].map(number => [number,'red']),
@@ -868,7 +869,7 @@
         stopStartDrop();
         if(roundCount>0 && roundCount>=groupRounds)groupNumber++;
         roundCount = 0; groupRounds=selectedRounds; revealed = false; active = false; history.open = historyList.children.length>0; updateRoundCounter();
-        if(historyList.children.length){numbersCaption.hidden=false;numbersCaption.textContent=`上組記錄已保留：第 ${previousGroup} 組・第 ${previousRound} 注`;}
+        if(historyList.children.length){numbersCaption.hidden=history.open;numbersCaption.textContent=`上組記錄已保留：第 ${previousGroup} 組・第 ${previousRound} 注`;}
         clearSettlingProgress();
         lastMotion=0;lastActivity=0;resultSequenceUntil=0;motionArmed=false;calmSampleCount=0;previousMotionVector=null;
         completionBanner.hidden=true;completionBanner.classList.remove('show');finishHint.hidden=true;hero.classList.remove('is-complete');
@@ -998,6 +999,8 @@
       }
       function showCompletionBanner() {
         if (roundCount < groupRounds) return;
+        resetResultBalls();
+        numbersCaption.hidden = true; numbersCaption.textContent = '';
         hero.classList.add('is-complete'); completionBanner.hidden=false;
         finishHint.hidden=false;
         completionBanner.classList.remove('show'); void completionBanner.offsetWidth; completionBanner.classList.add('show');
@@ -1031,7 +1034,7 @@
             void ball.offsetWidth;
             ball.classList.add('revealed');
             if (i === resultBalls.length-1) {
-              numbersCaption.hidden=false;numbersCaption.textContent=`第 ${groupNumber} 組・第 ${roundCount} 注結果`;
+              numbersCaption.hidden=history.open;numbersCaption.textContent=`第 ${groupNumber} 組・第 ${roundCount} 注結果`;
               if (roundCount >= groupRounds) showCompletionBanner();
               else setStatus(`第 ${roundCount} 注已記錄；再大力一戳開始下一注`,'ready');
             }
