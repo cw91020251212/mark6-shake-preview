@@ -385,6 +385,7 @@
       let active = false, revealed = false, soundOn = true, lastMotion = 0, lastActivity = 0, energy = 0, lastClackAt = 0, smooth = 0;
       let roundCount = 0, groupNumber = 1, selectedRounds = 4, groupRounds = 4, sensorReady = false, permissionResolved = false, permissionPending = false, revealTimers = [];
       let audioCtx = null, rollBuffer = null, clatterOffsets = [], rollFilter = null, rollGain = null, masterComp = null, playbackGain = null, clatterTimers = Array(CLATTER_LANES).fill(null);
+      let startDropGain = null, startDropNodes = [], startDropPending = false, startDropScheduled = false, startDropGeneration = 0;
       let idleTimer = null, settleNoticeTimer = null, mockTimer = null;
       let motionArmed=false, calmSampleCount=0, resultSequenceUntil=0;
       let previousMotionVector=null;
@@ -586,7 +587,7 @@
         soundToggle.textContent = soundOn ? '♫' : '♪';
         if (!soundOn && audioCtx && rollGain) rollGain.gain.setTargetAtTime(0, audioCtx.currentTime, .035);
         else if (soundOn && active) setRollSound(energy);
-        if (!soundOn) stopClatterScheduler();
+        if (!soundOn) { stopClatterScheduler(); stopStartDrop(); }
         setPlaybackLoudness(active);
       }
       soundToggle.addEventListener('click', () => { soundOn = !soundOn; updateSoundUI(); });
@@ -604,12 +605,13 @@
           rollFilter = audioCtx.createBiquadFilter(); rollFilter.type = 'lowpass'; rollFilter.frequency.value = 4800; rollFilter.Q.value = .35;
           rollGain = audioCtx.createGain(); rollGain.gain.value = 0;
           rollFilter.connect(rollGain); rollGain.connect(masterComp);
+          startDropGain = audioCtx.createGain(); startDropGain.gain.value = 1; startDropGain.connect(masterComp);
           fetch('assets/lottery-balls-dry-clatter.mp3').then(response => { if (!response.ok) throw new Error('sound asset unavailable'); return response.arrayBuffer(); })
             .then(bytes => audioCtx.decodeAudioData(bytes))
             .then(decoded => {
               if (!audioCtx || !rollFilter || !rollGain) return;
               rollBuffer = decoded; clatterOffsets = findClatterOffsets(decoded); window.__mark6SoundLoaded = true;
-              if (active) setRollSound(energy);
+              if (active) { setRollSound(energy); requestStartDrop(); }
             }).catch(() => { window.__mark6SoundLoaded = false; });
         } catch (_) { audioCtx = null; }
       }
@@ -637,6 +639,48 @@
       }
       function stopClatterScheduler() {
         clatterTimers.forEach((timer,lane) => { if (timer !== null) { clearTimeout(timer); clatterTimers[lane] = null; } });
+      }
+      function stopStartDrop() {
+        startDropPending = false; startDropScheduled = false; startDropGeneration++;
+        const now = audioCtx ? audioCtx.currentTime : 0, nodes = startDropNodes;
+        startDropNodes = [];
+        nodes.forEach(({source, fragmentGain}) => {
+          try { source.stop(now); } catch (_) {}
+          try { source.disconnect(); } catch (_) {}
+          try { fragmentGain.disconnect(); } catch (_) {}
+        });
+      }
+      function requestStartDrop() {
+        if (!startDropPending || startDropScheduled || !active || !soundOn || !audioCtx || !rollBuffer || !startDropGain) return;
+        if (audioCtx.state !== 'running') {
+          const generation = startDropGeneration;
+          audioCtx.resume().then(() => { if (generation === startDropGeneration) requestStartDrop(); }).catch(() => {});
+          return;
+        }
+        startDropScheduled = true; startDropPending = false;
+        const count = 10, now = audioCtx.currentTime;
+        const onsets = Array.from({length:count}, (_,i) => Math.max(0, .018 + i * .045 + (Math.random() - .5) * .04)).sort((a,b) => a-b);
+        onsets.forEach((delay,index) => {
+          const choice = Math.random(), duration = choice < .72 ? .035 + Math.random() * .045 : .07 + Math.random() * .045;
+          const maxOffset = Math.max(0, rollBuffer.duration - duration - .002);
+          const candidates = clatterOffsets.filter(value => value <= maxOffset);
+          const offset = candidates.length ? Math.min(maxOffset, candidates[Math.floor(Math.random() * candidates.length)] + Math.random() * .01) : Math.random() * maxOffset;
+          const start = now + .025 + delay, fadeIn = Math.min(.003, duration * .14), fadeOut = Math.min(.013, duration * .22);
+          const peak = (.26 + Math.random() * .12) * (index === 0 ? 1.08 : 1);
+          const source = audioCtx.createBufferSource(), fragmentGain = audioCtx.createGain();
+          source.buffer = rollBuffer; source.connect(fragmentGain); fragmentGain.connect(startDropGain);
+          fragmentGain.gain.setValueAtTime(.0001, start);
+          fragmentGain.gain.linearRampToValueAtTime(peak, start + fadeIn);
+          const fadeStart = Math.max(start + fadeIn, start + duration - fadeOut);
+          fragmentGain.gain.setValueAtTime(peak, fadeStart);
+          fragmentGain.gain.linearRampToValueAtTime(.0001, start + duration);
+          startDropNodes.push({source, fragmentGain});
+          source.onended = () => {
+            source.disconnect(); fragmentGain.disconnect();
+            startDropNodes = startDropNodes.filter(node => node.source !== source);
+          };
+          source.start(start, offset, duration);
+        });
       }
       function scheduleClatter() {
         for (let lane=0; lane<CLATTER_LANES; lane++) scheduleClatterLane(lane);
@@ -699,6 +743,7 @@
       function safeVibrate(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (_) {} }
       function registerShake(level) {
         if (!active || revealed) return;
+        stopStartDrop();
         const now=Date.now();
         clearSettlingProgress();
         lastMotion=now;lastActivity=now;
@@ -820,6 +865,7 @@
       function resetGame() {
         const previousGroup=groupNumber,previousRound=roundCount;
         stopClatterScheduler();
+        stopStartDrop();
         if(roundCount>0 && roundCount>=groupRounds)groupNumber++;
         roundCount = 0; groupRounds=selectedRounds; revealed = false; active = false; history.open = historyList.children.length>0; updateRoundCounter();
         if(historyList.children.length){numbersCaption.hidden=false;numbersCaption.textContent=`上組記錄已保留：第 ${previousGroup} 組・第 ${previousRound} 注`;}
@@ -833,6 +879,7 @@
       function hardResetSession() {
         clearTimeout(idleTimer); idleTimer=null;
         stopClatterScheduler();
+        stopStartDrop();
         clearSettlingProgress();
         stopMock();
         window.removeEventListener('devicemotion', handleMotion);
@@ -860,14 +907,16 @@
         if (active) return;
         if (roundCount >= groupRounds) resetGame();
         if (roundCount===0) groupRounds=selectedRounds;
+        stopStartDrop();
         resultSequenceUntil=0; active = true; revealed = false; lastMotion = 0; lastActivity = 0; motionArmed=!sensorReady; calmSampleCount=0; smooth = 0; lastClackAt = 0; energy = 0;
+        startDropPending = true;
         updateRoundCounter();
         startButton.hidden = true;
         demoButton.classList.toggle('visible', !sensorReady);
         const openingStatus=groupNumber>1 && historyList.children.length?'新一組已開始・上組記錄保留；等球停穩':'球珠落定中，暫勿搖';
         setStatus(sensorReady ? openingStatus : '按住「按住示範」體驗搖珠','waiting');
         meterFill.style.width = '3%'; meterText.textContent = sensorReady ? '球珠落定中' : '按住示範';
-        initAudio(); setPlaybackLoudness(true); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        initAudio(); setPlaybackLoudness(true); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {}); requestStartDrop();
         if (sensorReady) window.addEventListener('devicemotion', handleMotion, {passive:true});
         startIdleTimer();
       }
@@ -883,6 +932,7 @@
         }
         previousMotionVector=current;
         const motion=Math.max(0,magnitude-1.0);
+        if (active && motion >= MOTION_ACTIVITY_ACCEL) stopStartDrop();
         const strongJab=motion>=MIN_SHAKE_ACCEL && jerk>=MIN_SHAKE_JERK;
         smooth = smooth*.56 + motion*.44;
         if (revealed) {
@@ -958,6 +1008,7 @@
         if (!active || revealed) return;
         revealed = true; active = false; clearTimeout(idleTimer); stopMock();
         stopClatterScheduler();
+        stopStartDrop();
         clearSettlingProgress();
         lastMotion=0;lastActivity=0;
         chamber.classList.remove('is-mixing'); chamber.classList.add('is-idle'); machineScene.classList.remove('mixing');
@@ -1010,7 +1061,7 @@
         if (!permissionResolved) startSession(); else beginRound();
       });
       renderSavedRecords();updateRoundCounter();
-      document.addEventListener('visibilitychange', () => { if (document.hidden && audioCtx && rollGain) rollGain.gain.setTargetAtTime(0,audioCtx.currentTime,.04); });
+      document.addEventListener('visibilitychange', () => { if (document.hidden) { stopStartDrop(); if (audioCtx && rollGain) rollGain.gain.setTargetAtTime(0,audioCtx.currentTime,.04); } });
     })();
   </script>
 </body>
