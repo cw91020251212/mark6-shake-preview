@@ -644,28 +644,25 @@
           const now = audioCtx.currentTime;
           const revealNotes = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
           const frequency = revealNotes[index % revealNotes.length];
-          const envelope = audioCtx.createGain();
-          envelope.gain.setValueAtTime(.0001, now);
-          envelope.gain.exponentialRampToValueAtTime(.045, now + .008);
-          envelope.gain.exponentialRampToValueAtTime(.0001, now + .20);
-          envelope.connect(masterComp);
-          const fundamental = audioCtx.createOscillator();
-          fundamental.type = 'sine'; fundamental.frequency.setValueAtTime(frequency, now); fundamental.connect(envelope);
-          const harmonic = audioCtx.createOscillator(), harmonicGain = audioCtx.createGain();
-          harmonic.type = 'sine'; harmonic.frequency.setValueAtTime(frequency * 2, now);
-          harmonicGain.gain.setValueAtTime(.22, now); harmonic.connect(harmonicGain); harmonicGain.connect(envelope);
-          const malletEnvelope = audioCtx.createGain();
-          malletEnvelope.gain.setValueAtTime(.0001, now);
-          malletEnvelope.gain.exponentialRampToValueAtTime(.018, now + .004);
-          malletEnvelope.gain.exponentialRampToValueAtTime(.0001, now + .12);
-          malletEnvelope.connect(masterComp);
-          const mallet = audioCtx.createOscillator();
-          mallet.type = 'triangle'; mallet.frequency.setValueAtTime(frequency, now); mallet.connect(malletEnvelope);
-          fundamental.onended = () => fundamental.disconnect();
-          harmonic.onended = () => { harmonic.disconnect(); harmonicGain.disconnect(); envelope.disconnect(); };
-          mallet.onended = () => { mallet.disconnect(); malletEnvelope.disconnect(); };
-          fundamental.start(now); harmonic.start(now); mallet.start(now);
-          fundamental.stop(now + .22); harmonic.stop(now + .22); mallet.stop(now + .14);
+          const partials = [
+            { ratio: 1, peak: .036, duration: .23, attack: .003 },
+            { ratio: 2.76, peak: .012, duration: .16, attack: .003 },
+            { ratio: 4.08, peak: .0042, duration: .105, attack: .002 }
+          ];
+          partials.forEach(({ ratio, peak, duration, attack }) => {
+            const envelope = audioCtx.createGain();
+            envelope.gain.setValueAtTime(.0001, now);
+            envelope.gain.exponentialRampToValueAtTime(peak, now + attack);
+            envelope.gain.exponentialRampToValueAtTime(.0001, now + duration);
+            envelope.connect(masterComp);
+            const oscillator = audioCtx.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency * ratio, now);
+            oscillator.connect(envelope);
+            oscillator.onended = () => { oscillator.disconnect(); envelope.disconnect(); };
+            oscillator.start(now);
+            oscillator.stop(now + duration + .025);
+          });
         } catch (_) {}
       }
       function stopClatterScheduler() {
