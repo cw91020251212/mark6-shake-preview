@@ -1128,6 +1128,7 @@
       renderSavedRecords();updateRoundCounter();
       document.addEventListener('visibilitychange', () => { if (document.hidden) { stopStartDrop(); stopCompletionCue(); if (audioCtx && rollGain) rollGain.gain.setTargetAtTime(0,audioCtx.currentTime,.04); } });
     })();
-  </script>
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
+</script>
 </body>
 </html>
