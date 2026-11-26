@@ -416,8 +416,8 @@
         const old = {cx:world.cx,cy:world.cy,boundary:world.boundary};
         world.width = rect.width; world.height = rect.height;
         world.cx = rect.width/2; world.cy = rect.height/2;
-        world.boundary = Math.min(rect.width,rect.height)/2 - 10;
-        world.radius = Math.min(21,Math.max(15,world.boundary/8));
+        world.boundary = Math.min(rect.width,rect.height)/2 + 2;
+        world.radius = Math.min(21,Math.max(15,(world.boundary-12)/8)) * 1.15;
         world.perspective = Math.max(720,world.boundary*7.5);
         ballBed.style.perspective = `${world.perspective}px`;
         if (!world.initialized) {
