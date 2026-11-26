@@ -378,6 +378,7 @@
       const ballColorFor = number => BALL_COLOR_BY_NUMBER.get(number);
       const SAVE_KEY='mark6_preview_saved_records_v1';
       const ACTIVE_ROLL_MAX_GAIN=2.4, ACTIVE_OUTPUT_GAIN=1.2, CLATTER_LANES=4;
+      const REVEAL_DING_DURATION=.23, COMPLETION_CUE_GAP=.8;
       const PHYSICS = { pxPerMps2:190, restitution:.72, collisionRestitution:.78, maxSpeed:1600, gravityFilter:.12, turbulence:1420 };
       const MIN_SHAKE_ACCEL=7.5, MIN_SHAKE_JERK=25, MOTION_ACTIVITY_ACCEL=1.5, ARM_CALM_ACCEL=1.8, ARM_CALM_SAMPLES=6, SHAKE_IDLE_MS=1500, SETTLE_NOTICE_MS=220, MAX_SELECTABLE_ROUNDS=20;
       const world = { width:0, height:0, cx:0, cy:0, boundary:0, radius:15, perspective:760, initialized:false };
@@ -387,6 +388,7 @@
       let roundCount = 0, groupNumber = 1, selectedRounds = 4, groupRounds = 4, sensorReady = false, permissionResolved = false, permissionPending = false, revealTimers = [];
       let audioCtx = null, rollBuffer = null, clatterOffsets = [], rollFilter = null, rollGain = null, masterComp = null, playbackGain = null, clatterTimers = Array(CLATTER_LANES).fill(null);
       let startDropGain = null, startDropNodes = [], startDropPending = false, startDropScheduled = false, startDropGeneration = 0;
+      let completionCueBuffer = null, completionCueLoadPromise = null, completionCueNodes = [], completionCueGeneration = 0;
       let idleTimer = null, settleNoticeTimer = null, mockTimer = null;
       let motionArmed=false, calmSampleCount=0, resultSequenceUntil=0;
       let previousMotionVector=null;
@@ -588,7 +590,7 @@
         soundToggle.textContent = soundOn ? '♫' : '♪';
         if (!soundOn && audioCtx && rollGain) rollGain.gain.setTargetAtTime(0, audioCtx.currentTime, .035);
         else if (soundOn && active) setRollSound(energy);
-        if (!soundOn) { stopClatterScheduler(); stopStartDrop(); }
+        if (!soundOn) { stopClatterScheduler(); stopStartDrop(); stopCompletionCue(); }
         setPlaybackLoudness(active);
       }
       soundToggle.addEventListener('click', () => { soundOn = !soundOn; updateSoundUI(); });
@@ -607,6 +609,10 @@
           rollGain = audioCtx.createGain(); rollGain.gain.value = 0;
           rollFilter.connect(rollGain); rollGain.connect(masterComp);
           startDropGain = audioCtx.createGain(); startDropGain.gain.value = 1; startDropGain.connect(masterComp);
+          completionCueLoadPromise = fetch('assets/completion-crystal-chime.wav').then(response => { if (!response.ok) throw new Error('completion cue unavailable'); return response.arrayBuffer(); })
+            .then(bytes => audioCtx.decodeAudioData(bytes))
+            .then(decoded => { completionCueBuffer = decoded; return decoded; })
+            .catch(() => null);
           fetch('assets/lottery-balls-dry-clatter.mp3').then(response => { if (!response.ok) throw new Error('sound asset unavailable'); return response.arrayBuffer(); })
             .then(bytes => audioCtx.decodeAudioData(bytes))
             .then(decoded => {
@@ -639,13 +645,13 @@
         playbackGain.gain.setTargetAtTime(isPlaying && soundOn ? ACTIVE_OUTPUT_GAIN : 1, audioCtx.currentTime, .045);
       }
       function playRevealDing(index) {
-        if (!soundOn || !audioCtx || !masterComp) return;
+        if (!soundOn || !audioCtx || !masterComp) return null;
         try {
           const now = audioCtx.currentTime;
           const revealNotes = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
           const frequency = revealNotes[index % revealNotes.length];
           const partials = [
-            { ratio: 1, peak: .036, duration: .23, attack: .003 },
+            { ratio: 1, peak: .036, duration: REVEAL_DING_DURATION, attack: .003 },
             { ratio: 2.76, peak: .012, duration: .16, attack: .003 },
             { ratio: 4.08, peak: .0042, duration: .105, attack: .002 }
           ];
@@ -663,7 +669,33 @@
             oscillator.start(now);
             oscillator.stop(now + duration + .025);
           });
-        } catch (_) {}
+          return now;
+        } catch (_) { return null; }
+      }
+      function stopCompletionCue() {
+        completionCueGeneration++;
+        const now = audioCtx ? audioCtx.currentTime : 0, nodes = completionCueNodes;
+        completionCueNodes = [];
+        nodes.forEach(({source}) => {
+          try { source.stop(now); } catch (_) {}
+          try { source.disconnect(); } catch (_) {}
+        });
+      }
+      function playCompletionCue(revealStartedAt) {
+        if (!soundOn || !audioCtx || !masterComp) return;
+        stopCompletionCue();
+        const generation = completionCueGeneration;
+        const cueAt = (Number.isFinite(revealStartedAt) ? revealStartedAt : audioCtx.currentTime) + REVEAL_DING_DURATION + COMPLETION_CUE_GAP;
+        const scheduleCue = buffer => {
+          if (!buffer || generation !== completionCueGeneration || !soundOn || !audioCtx || !masterComp) return;
+          const source = audioCtx.createBufferSource();
+          source.buffer = buffer; source.connect(masterComp);
+          const cueNode = {source}; completionCueNodes.push(cueNode);
+          source.onended = () => { source.disconnect(); completionCueNodes = completionCueNodes.filter(node => node !== cueNode); };
+          source.start(Math.max(cueAt, audioCtx.currentTime + .01));
+        };
+        if (completionCueBuffer) scheduleCue(completionCueBuffer);
+        else if (completionCueLoadPromise) completionCueLoadPromise.then(scheduleCue);
       }
       function stopClatterScheduler() {
         clatterTimers.forEach((timer,lane) => { if (timer !== null) { clearTimeout(timer); clatterTimers[lane] = null; } });
@@ -894,6 +926,7 @@
         const previousGroup=groupNumber,previousRound=roundCount;
         stopClatterScheduler();
         stopStartDrop();
+        stopCompletionCue();
         if(roundCount>0 && roundCount>=groupRounds)groupNumber++;
         roundCount = 0; groupRounds=selectedRounds; revealed = false; active = false; history.open = historyList.children.length>0; updateRoundCounter();
         if(historyList.children.length){numbersCaption.hidden=history.open;numbersCaption.textContent=`上組記錄已保留：第 ${previousGroup} 組・第 ${previousRound} 注`;}
@@ -908,6 +941,7 @@
         clearTimeout(idleTimer); idleTimer=null;
         stopClatterScheduler();
         stopStartDrop();
+        stopCompletionCue();
         clearSettlingProgress();
         stopMock();
         window.removeEventListener('devicemotion', handleMotion);
@@ -1060,10 +1094,10 @@
             ball.querySelector('.result-number').textContent = String(picks[i]).padStart(2,'0');
             void ball.offsetWidth;
             ball.classList.add('revealed');
-            playRevealDing(i);
+            const revealStartedAt = playRevealDing(i);
             if (i === resultBalls.length-1) {
               numbersCaption.hidden=history.open;numbersCaption.textContent=`第 ${groupNumber} 組・第 ${roundCount} 注結果`;
-              if (roundCount >= groupRounds) showCompletionBanner();
+              if (roundCount >= groupRounds) { showCompletionBanner(); playCompletionCue(revealStartedAt); }
               else setStatus(`第 ${roundCount} 注已記錄；再大力一戳開始下一注`,'ready');
             }
           }, 120 + i*240);
@@ -1092,7 +1126,7 @@
         if (!permissionResolved) startSession(); else beginRound();
       });
       renderSavedRecords();updateRoundCounter();
-      document.addEventListener('visibilitychange', () => { if (document.hidden) { stopStartDrop(); if (audioCtx && rollGain) rollGain.gain.setTargetAtTime(0,audioCtx.currentTime,.04); } });
+      document.addEventListener('visibilitychange', () => { if (document.hidden) { stopStartDrop(); stopCompletionCue(); if (audioCtx && rollGain) rollGain.gain.setTargetAtTime(0,audioCtx.currentTime,.04); } });
     })();
   </script>
 </body>
